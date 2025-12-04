@@ -1,0 +1,12 @@
+  /* Footer */
+    .footer {
+      background: #1a2a6c;
+      color: white;
+      padding: 20px;
+      display: flex;
+    }
+    .footer .logoo{
+      color: white;
+      font-size: 30px;
+      margin-right: 250px;
+    }
