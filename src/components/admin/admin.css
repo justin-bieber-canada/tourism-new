@@ -1,0 +1,160 @@
+/* Admin styles - responsive and modern basics */
+.admin-layout{display:flex;min-height:100vh;background:#f5f7fb;width:100%;box-sizing:border-box}
+.admin-sidebar{--sidebar-width:220px;--sidebar-collapsed-width:72px;width:var(--sidebar-width);background:#0f1724;color:#fff;padding:20px;box-sizing:border-box;display:flex;flex-direction:column;height:100vh;transition:width .2s ease}
+.admin-brand{font-weight:700;margin-bottom:16px;font-size:18px;display:flex;align-items:center;gap:8px}
+.admin-brand .collapse-toggle{margin-left:auto;background:transparent;border:none;color:#fff;cursor:pointer;font-size:14px}
+.admin-brand .mobile-close{display:none;margin-left:8px;background:transparent;border:none;color:#fff;cursor:pointer}
+.admin-sidebar nav{display:flex;flex-direction:column;flex:1}
+.admin-nav-links{display:flex;flex-direction:column}
+.admin-sidebar nav a{display:block;color:rgba(255,255,255,0.9);padding:10px;border-radius:6px;margin:4px 0;text-decoration:none}
+.admin-sidebar nav a span{display:inline-block}
+.admin-sidebar nav a.active,.admin-sidebar nav a:hover{background:rgba(255,255,255,0.06)}
+.admin-nav-bottom{margin-top:auto}
+.nav-logout{display:block;width:100%;text-align:left;padding:10px;border-radius:6px;background:transparent;border:none;color:rgba(255,255,255,0.9);cursor:pointer}
+.nav-logout:hover{background:rgba(255,255,255,0.04)}
+
+/* Collapsed sidebar */
+.admin-sidebar.collapsed{width:56px;padding:8px}
+.admin-sidebar.collapsed .admin-brand span{font-size:13px}
+.admin-sidebar.collapsed nav a{padding-left:0;justify-content:center}
+.admin-sidebar.collapsed nav a .nav-icon{display:inline-block}
+.admin-sidebar.collapsed nav a .nav-label{display:none}
+.admin-sidebar.collapsed .nav-logout{text-align:center;padding:8px}
+
+/* Nav link layout */
+.admin-nav-links a{display:flex;align-items:center;gap:12px;padding:10px;border-radius:6px}
+.nav-icon{width:28px;text-align:center;flex:0 0 28px;line-height:1}
+.nav-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.mobile-menu-button{position:fixed;top:12px;left:12px;z-index:140;background:#0b74ff;color:#fff;border:none;padding:8px 10px;border-radius:6px;display:none}
+.admin-sidebar.mobile-open{position:fixed;left:0;top:0;height:100vh;z-index:120;transform:translateX(0);box-shadow:0 6px 20px rgba(2,6,23,0.4)}
+.admin-sidebar.mobile-open{
+  /* mobile sidebar uses viewport percentage for responsive width */
+  width:30vw;min-width:220px;max-width:420px;left:0;right:auto;top:0;height:100vh;transform:none;background:#0f1724;padding:20px;border-radius:0;overflow:auto;z-index:120}
+/* Ensure labels are visible when opened on mobile */
+.admin-sidebar.mobile-open .admin-nav-links span{display:inline-block}
+.admin-sidebar.mobile-open .collapse-toggle{display:none}
+/* explicit clickable backdrop that sits behind the sidebar but above page content */
+.admin-mobile-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.35);z-index:110}
+.admin-sidebar{transform:translateX(0)}
+
+.admin-main{flex:1;padding:24px;box-sizing:border-box;min-height:100vh;display:flex;flex-direction:column;gap:18px;width:100%}
+.admin-main-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.admin-actions button{margin-left:8px}
+.admin-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:18px;width:100%}
+.card{background:#fff;padding:18px;border-radius:8px;box-shadow:0 1px 6px rgba(16,24,40,0.08);display:flex;flex-direction:column;justify-content:center;min-width:0}
+.card h3{margin:0;font-size:14px;color:#334155}
+.card-value{font-size:22px;font-weight:700;margin-top:8px}
+.admin-columns{display:grid;grid-template-columns:1fr 1fr;gap:18px;grid-auto-rows:1fr;width:100%}
+.panel{background:#fff;padding:18px;border-radius:8px;box-sizing:border-box;width:100%;height:100%;overflow:auto}
+.list{list-style:none;padding:0;margin:0}
+.list li{padding:8px 0;border-bottom:1px dashed #eef2f7}
+.admin-logs{display:flex;flex-direction:column;gap:8px}
+.admin-logs .log{background:#fff;padding:8px;border-radius:6px;margin:0}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{padding:10px;border-bottom:1px solid #eef2f7;text-align:left}
+.btn-primary{background:#0b74ff;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer}
+.btn-outline{background:transparent;border:1px solid #cbd5e1;padding:8px 12px;border-radius:6px;cursor:pointer}
+.btn-ghost{background:transparent;border:none;color:#fff;cursor:pointer}
+.btn-sm{padding:6px 8px;border-radius:6px;margin-right:6px}
+.btn-danger{background:#ff6b6b;color:#fff;border:none}
+.admin-login-wrap{display:flex;align-items:center;justify-content:center;height:80vh}
+.admin-login-card{width:360px;background:#fff;padding:24px;border-radius:8px;box-shadow:0 6px 20px rgba(12,16,32,0.08)}
+.admin-login-card h2{margin-top:0;margin-bottom:12px}
+.admin-login-card label{display:block;margin-top:8px;font-size:13px;color:#334155}
+.admin-login-card input{width:100%;padding:10px;border:1px solid #e6eef8;border-radius:6px;margin-top:6px}
+.admin-error{color:#b91c1c;margin-top:8px}
+.report-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.report-card{background:#fff;padding:12px;border-radius:8px}
+
+/* Modal */
+.admin-modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.5);display:flex;align-items:center;justify-content:center;z-index:60}
+.admin-modal{background:#fff;border-radius:8px;max-width:1100px;width:100%;padding:12px}
+.admin-modal-header{display:flex;justify-content:space-between;align-items:center;padding:8px}
+.admin-modal-body{padding:8px}
+
+/* Tables: standard row/column layout. Use wrapper for small screens to allow horizontal scroll. */
+.table-wrapper{width:100%;overflow:auto}
+.table{width:100%;border-collapse:collapse;table-layout:auto}
+.table thead{background:transparent}
+.table th,.table td{padding:10px;border-bottom:1px solid #eef2f7;text-align:left;white-space:normal}
+.table th{font-weight:600;color:#334155}
+
+@media (max-width:600px){
+  /* allow horizontal scroll on very small screens */
+  .table{min-width:600px}
+}
+
+@media (max-width:1024px){
+  /* tablet and mobile behavior */
+  .admin-sidebar{position:fixed;left:-100%;top:0;height:100vh;padding:16px;transition:transform .18s ease}
+  .admin-sidebar.mobile-open{transform:translateX(0);left:0}
+  .mobile-menu-button{display:block}
+  .admin-brand .mobile-close{display:inline-block}
+  .admin-layout{flex-direction:column}
+  .admin-main{padding:14px}
+  .admin-actions{display:flex;flex-direction:column;gap:8px}
+  .admin-cards{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+}
+
+@media (max-width:480px){
+  /* Small phones: ensure full-screen usage */
+  .admin-main{padding:10px}
+  .admin-main-header h1{font-size:20px}
+  .card-value{font-size:18px}
+  .panel{padding:12px}
+  .admin-cards{gap:10px}
+  .admin-logs .log{padding:10px}
+  .admin-modal{height:100vh;border-radius:0;padding:12px;max-width:100%}
+  .admin-modal-body{overflow:auto;max-height:calc(100vh - 120px)}
+  .mobile-menu-button{left:8px;top:8px;padding:6px 8px}
+}
+
+@media (min-width:1200px){
+  /* Large desktops: make dashboard full-bleed and increase spacing */
+  .admin-main{padding:32px}
+  .admin-cards{grid-template-columns:repeat(4,1fr);gap:20px}
+  .card{padding:22px}
+  .admin-columns{grid-template-columns:2fr 1fr;gap:24px}
+  .panel{padding:20px}
+}
+
+/* Small phones: tighten spacing and make panels full width */
+@media (max-width:480px){
+  .admin-sidebar{width:220px}
+  .admin-brand{font-size:16px}
+  .admin-main{padding:10px}
+  .admin-main-header h1{font-size:20px}
+  .card-value{font-size:18px}
+  .panel{padding:12px}
+  .admin-cards{gap:8px}
+  .admin-logs .log{padding:10px}
+  .admin-modal{height:100vh;border-radius:0;padding:12px;max-width:100%}
+  .admin-modal-body{overflow:auto;max-height:calc(100vh - 120px)}
+  .mobile-menu-button{left:8px;top:8px;padding:6px 8px}
+}
+
+/* Tablet: increase touch targets */
+@media (min-width:481px) and (max-width:1024px){
+  .admin-sidebar{width:200px}
+  .admin-brand{font-size:18px}
+  .admin-main{padding:16px}
+  .admin-actions button{padding:10px 12px}
+  .table th,.table td{padding:8px}
+}
+
+/* General improvements: make panels and inputs scale */
+.panel{box-sizing:border-box}
+.panel input, .panel select, .panel textarea{max-width:100%;box-sizing:border-box}
+.btn-primary, .btn-outline{min-height:40px}
+
+/* Ensure full viewport height usage when sidebar is hidden and full-bleed layout */
+html,body,#root{height:100%;margin:0;padding:0;width:100%}
+.admin-layout{min-height:100vh;width:100vw;overflow-x:hidden}
+/* prevent background scrolling when mobile sidebar is open */
+body.admin-mobile-open{overflow:hidden;height:100vh}
+
+/* Change password / form spacing */
+.panel form label{display:block;margin-top:8px;font-weight:600}
+.panel form input{width:100%;padding:10px;border-radius:6px;border:1px solid #e6eef8;margin-top:6px;box-sizing:border-box}
+.panel form .btn-primary{margin-top:12px}

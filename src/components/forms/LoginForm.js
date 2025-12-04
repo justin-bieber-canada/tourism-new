@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 
 function LoginForm() {
@@ -16,9 +16,24 @@ function LoginForm() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle login logic here
+    // Simple local check: if admin credentials entered, redirect to admin dashboard
+    const { username, password } = formData;
     console.log('Login data:', formData);
+    // Default admin credentials (change in adminService.mock.js if needed)
+    if (username === 'admin' && password === 'admin123') {
+      // store a mock admin token and user info so AdminRoute allows access
+      localStorage.setItem('admin_token', 'mock-admin-token');
+      localStorage.setItem('admin_user', JSON.stringify({ username: 'admin', name: 'Administrator' }));
+      // Do not force change password; let admin use the Change Password link when desired
+      navigate('/admin/dashboard');
+      return;
+    }
+
+    // Otherwise proceed with normal login (visitor/user) flow - replace with real auth
+    alert('Login successful (mock). For admin use username: admin and password: admin123');
   };
+
+  const navigate = useNavigate();
 
 
 
