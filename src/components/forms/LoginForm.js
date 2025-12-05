@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { visitorService } from '../../services/visitorService';
+import { dataService } from '../../services/dataService';
 
 
 function LoginForm() {
@@ -21,24 +21,37 @@ function LoginForm() {
     e.preventDefault();
     const { username, password } = formData;
 
-    // Admin Login Check
-    if (username === 'admin' && password === 'admin123') {
-      localStorage.setItem('admin_token', 'mock-admin-token');
-      localStorage.setItem('admin_user', JSON.stringify({ username: 'admin', name: 'Administrator', role: 'admin' }));
-      navigate('/admin/dashboard');
-      return;
-    }
+    const user = dataService.findUser(username, password);
 
-    // Visitor Login Check
-    visitorService.login(username, password)
-      .then(user => {
+    if (user) {
+      if (!user.is_active) {
+        alert('Your account has been deactivated. Please contact the administrator.');
+        return;
+      }
+
+      const userType = user.user_type ? user.user_type.toLowerCase().trim() : 'visitor';
+
+      if (userType === 'admin') {
+        localStorage.setItem('admin_token', 'mock-admin-token');
+        localStorage.setItem('admin_user', JSON.stringify(user));
+        navigate('/admin/dashboard');
+      } else if (userType === 'researcher') {
+        localStorage.setItem('researcher_token', 'mock-researcher-token');
+        localStorage.setItem('researcher_user', JSON.stringify(user));
+        navigate('/researcher/dashboard');
+      } else if (userType === 'guide' || userType === 'site_agent') {
+        localStorage.setItem('guide_token', 'mock-guide-token');
+        localStorage.setItem('guide_user', JSON.stringify(user));
+        navigate('/guide/dashboard');
+      } else {
+        // Visitor
         localStorage.setItem('visitor_token', 'mock-visitor-token');
         localStorage.setItem('visitor_user', JSON.stringify(user));
         navigate('/visitor/dashboard');
-      })
-      .catch(err => {
-        alert('Invalid credentials. Please register if you do not have an account.');
-      });
+      }
+    } else {
+      alert('Invalid credentials. Please check your username and password.');
+    }
   };
 
 
@@ -51,7 +64,7 @@ function LoginForm() {
       </div>
       
       <div className="login-box">
-        <h2>Login</h2>
+        <h2>Sign In</h2>
         
         <form onSubmit={handleSubmit}>
           <div className="form-group">

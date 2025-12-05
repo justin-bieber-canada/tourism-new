@@ -53,6 +53,14 @@ export function createUser(user) {
   return request('/admin/users', { method: 'POST', body: JSON.stringify(user) });
 }
 
+export function toggleUserStatus(userId, isActive) {
+  return request(`/admin/users/${userId}/status`, { method: 'PUT', body: JSON.stringify({ is_active: isActive }) });
+}
+
+export function deleteUser(userId) {
+  return request(`/admin/users/${userId}`, { method: 'DELETE' });
+}
+
 export function deleteSite(siteId) {
   return request(`/admin/sites/${siteId}`, { method: 'DELETE' });
 }
@@ -85,4 +93,5 @@ export default {
   getSites,
   getRequests,
   getPayments,
+  toggleUserStatus,
 };

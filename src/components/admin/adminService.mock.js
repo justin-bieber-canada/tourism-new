@@ -9,8 +9,22 @@ const admin = {
 export function authenticate(username, password) {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
+      // Check hardcoded admin first (legacy)
       if (username === admin.username && password === admin.password) {
-        resolve({ token: 'mock-admin-token', user: { username: 'admin', name: 'Administrator' } });
+        resolve({ token: 'mock-admin-token', user: { username: 'admin', name: 'Administrator', user_type: 'admin' } });
+        return;
+      }
+
+      // Check dataService users
+      const user = dataService.findUser(username, password);
+      if (user) {
+        if (!user.is_active) {
+          reject(new Error('Account is deactivated'));
+          return;
+        }
+        // Generate a simple token based on type
+        const token = user.user_type === 'admin' ? 'mock-admin-token' : 'mock-researcher-token';
+        resolve({ token, user });
       } else {
         reject(new Error('Invalid credentials'));
       }
@@ -37,6 +51,14 @@ export function createSite(site) {
 
 export function createUser(user) {
   return Promise.resolve(dataService.addUser(user));
+}
+
+export function toggleUserStatus(userId, isActive) {
+  return Promise.resolve(dataService.updateUserStatus(userId, isActive));
+}
+
+export function deleteUser(userId) {
+  return Promise.resolve(dataService.deleteUser(userId));
 }
 
 export function deleteSite(siteId) {
@@ -80,6 +102,7 @@ export default {
   getPayments,
   createSite,
   createUser,
+  toggleUserStatus,
   deleteSite,
   approveRequest,
   rejectRequest,

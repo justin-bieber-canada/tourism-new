@@ -30,8 +30,33 @@ export default function VisitorDashboard() {
     <div className="visitor-layout">
       <VisitorSidebar />
       <main className="visitor-main">
-        <header className="visitor-main-header">
+        <header className="visitor-main-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
           <h1>Welcome, {user ? user.first_name : 'Visitor'}!</h1>
+          
+          {user && (
+            <div className="dashboard-profile-display" style={{display: 'flex', alignItems: 'center', gap: '15px'}}>
+              <div style={{
+                width: '60px', 
+                height: '60px', 
+                margin: '5px',
+                borderRadius: '50%', 
+                overflow: 'hidden', 
+                border: '2px solid #fff',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+                backgroundImage: user.image ? `url(${user.image})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundColor: '#e6f7ff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.5rem',
+                color: '#1890ff'
+              }}>
+                {!user.image && user.first_name.charAt(0)}
+              </div>
+            </div>
+          )}
         </header>
 
         <section className="visitor-cards">

@@ -13,6 +13,8 @@ export const getRequests = (...args) => (USE_MOCK ? mock.getRequests(...args) : 
 export const getPayments = (...args) => (USE_MOCK ? mock.getPayments(...args) : api.getPayments(...args));
 export const createSite = (...args) => (USE_MOCK ? mock.createSite(...args) : api.createSite(...args));
 export const createUser = (...args) => (USE_MOCK ? mock.createUser(...args) : api.createUser(...args));
+export const toggleUserStatus = (...args) => (USE_MOCK ? mock.toggleUserStatus(...args) : api.toggleUserStatus(...args));
+export const deleteUser = (...args) => (USE_MOCK ? mock.deleteUser(...args) : api.deleteUser(...args));
 export const deleteSite = (...args) => (USE_MOCK ? mock.deleteSite(...args) : api.deleteSite(...args));
 export const approveRequest = (...args) => (USE_MOCK ? mock.approveRequest(...args) : api.approveRequest(...args));
 export const rejectRequest = (...args) => (USE_MOCK ? mock.rejectRequest(...args) : api.rejectRequest(...args));

@@ -3,7 +3,7 @@ import AdminModal from './AdminModal';
 import './admin.css';
 import { createUser } from './adminService';
 
-export default function AddUserModal({ onClose, onCreated, defaultType = 'guide' }) {
+export default function AddUserModal({ onClose, onCreated, defaultType = 'site_agent' }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -35,9 +35,8 @@ export default function AddUserModal({ onClose, onCreated, defaultType = 'guide'
         <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
         <label>Type</label>
         <select value={userType} onChange={e => setUserType(e.target.value)}>
-          <option value="guide">Guide</option>
-          <option value="researcher">Researcher</option>
           <option value="site_agent">Site Agent</option>
+          <option value="researcher">Researcher</option>
         </select>
         <div style={{marginTop:12}}>
           <button className="btn-primary" disabled={submitting}>{submitting ? 'Adding…' : 'Add'}</button>

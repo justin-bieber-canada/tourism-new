@@ -22,6 +22,18 @@ import VisitorPayments from './components/visitor/VisitorPayments';
 import VisitorHistory from './components/visitor/VisitorHistory';
 import VisitorProfile from './components/visitor/VisitorProfile';
 import VisitorRoute from './components/visitor/VisitorRoute';
+// Researcher
+import ResearcherDashboard from './components/researcher/ResearcherDashboard';
+import ResearcherSites from './components/researcher/ResearcherSites';
+import ResearcherProfile from './components/researcher/ResearcherProfile';
+import ResearcherRoute from './components/researcher/ResearcherRoute';
+// Guide
+import GuideDashboard from './components/guide/GuideDashboard';
+import GuideRequests from './components/guide/GuideRequests';
+import GuideSchedule from './components/guide/GuideSchedule';
+import GuideReports from './components/guide/GuideReports';
+import GuideProfile from './components/guide/GuideProfile';
+import GuideRoute from './components/guide/GuideRoute';
 import './App.css';
 
 function App() {
@@ -42,6 +54,18 @@ function App() {
           <Route path="/admin/requests" element={<AdminRoute><AdminRequests /></AdminRoute>} />
           <Route path="/admin/payments" element={<AdminRoute><AdminPayments /></AdminRoute>} />
           <Route path="/admin/reports" element={<AdminRoute><AdminReports /></AdminRoute>} />
+
+          {/* Researcher routes */}
+          <Route path="/researcher/dashboard" element={<ResearcherRoute><ResearcherDashboard /></ResearcherRoute>} />
+          <Route path="/researcher/sites" element={<ResearcherRoute><ResearcherSites /></ResearcherRoute>} />
+          <Route path="/researcher/profile" element={<ResearcherRoute><ResearcherProfile /></ResearcherRoute>} />
+
+          {/* Guide routes */}
+          <Route path="/guide/dashboard" element={<GuideRoute><GuideDashboard /></GuideRoute>} />
+          <Route path="/guide/requests" element={<GuideRoute><GuideRequests /></GuideRoute>} />
+          <Route path="/guide/schedule" element={<GuideRoute><GuideSchedule /></GuideRoute>} />
+          <Route path="/guide/reports" element={<GuideRoute><GuideReports /></GuideRoute>} />
+          <Route path="/guide/profile" element={<GuideRoute><GuideProfile /></GuideRoute>} />
 
           {/* Visitor routes */}
           <Route path="/visitor/dashboard" element={<VisitorRoute><VisitorDashboard /></VisitorRoute>} />

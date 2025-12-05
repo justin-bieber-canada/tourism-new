@@ -6,9 +6,16 @@ import { getRequests, approveRequest, rejectRequest, assignGuide } from './admin
 
 export default function AdminRequests() {
   const [requests, setRequests] = useState([]);
+  const [assigningId, setAssigningId] = useState(null);
+  const [guideIdInput, setGuideIdInput] = useState('');
+
   useEffect(() => { getRequests().then(setRequests); }, []);
 
-  const refresh = () => getRequests().then(setRequests);
+  const refresh = () => {
+    getRequests().then(setRequests);
+    setAssigningId(null);
+    setGuideIdInput('');
+  };
 
   const handleApprove = async (id) => {
     try { await approveRequest(id); refresh(); } catch (err) { alert('Approve failed: ' + err.message); }
@@ -18,10 +25,14 @@ export default function AdminRequests() {
     try { await rejectRequest(id); refresh(); } catch (err) { alert('Reject failed: ' + err.message); }
   };
 
-  const handleAssign = async (id) => {
-    const guideId = parseInt(prompt('Enter guide user_id to assign'));
-    if (!guideId) return;
-    try { await assignGuide(id, { guide_id: guideId }); refresh(); } catch (err) { alert('Assign failed: ' + err.message); }
+  const startAssign = (id) => {
+    setAssigningId(id);
+    setGuideIdInput('');
+  };
+
+  const submitAssign = async (id) => {
+    if (!guideIdInput) return;
+    try { await assignGuide(id, { guide_id: parseInt(guideIdInput) }); refresh(); } catch (err) { alert('Assign failed: ' + err.message); }
   };
 
   return (
@@ -44,9 +55,45 @@ export default function AdminRequests() {
                   <td>{r.number_of_visitors}</td>
                       <td>{r.request_status}</td>
                       <td>
-                        <button className="btn-sm" onClick={() => handleApprove(r.request_id)}>Approve</button>
-                        <button className="btn-sm btn-danger" onClick={() => handleReject(r.request_id)}>Reject</button>
-                        <button className="btn-sm" onClick={() => handleAssign(r.request_id)}>Assign Guide</button>
+                        {r.request_status === 'pending' && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <button className="btn-sm" onClick={() => handleApprove(r.request_id)}>Approve</button>
+                            <button className="btn-sm btn-danger" onClick={() => handleReject(r.request_id)}>Reject</button>
+                          </div>
+                        )}
+                        {r.request_status === 'approved' && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            {assigningId === r.request_id ? (
+                              <>
+                                <input 
+                                  type="number" 
+                                  placeholder="ID" 
+                                  value={guideIdInput} 
+                                  onChange={e => setGuideIdInput(e.target.value)}
+                                  style={{ width: '60px', padding: '4px', margin: 0, fontSize: '0.8rem' }}
+                                />
+                                <button className="btn-sm" onClick={() => submitAssign(r.request_id)}>Save</button>
+                                <button className="btn-sm btn-outline" onClick={() => setAssigningId(null)} style={{padding: '4px 8px'}}>✕</button>
+                              </>
+                            ) : (
+                              <>
+                                <button 
+                                  className="btn-sm" 
+                                  style={{ fontSize: '0.75rem', padding: '4px 8px' }}
+                                  onClick={() => startAssign(r.request_id)}
+                                >
+                                  Assign Site Agent
+                                </button>
+                                <button className="btn-sm btn-danger" onClick={() => handleReject(r.request_id)}>Reject</button>
+                              </>
+                            )}
+                          </div>
+                        )}
+                        {r.request_status === 'rejected' && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <button className="btn-sm" onClick={() => handleApprove(r.request_id)}>Approve</button>
+                          </div>
+                        )}
                       </td>
                 </tr>
               ))}

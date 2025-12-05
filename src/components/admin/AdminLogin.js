@@ -16,10 +16,17 @@ export default function AdminLogin() {
     setLoading(true);
     try {
       const res = await authenticate(username, password);
-      localStorage.setItem('admin_token', res.token);
-      localStorage.setItem('admin_user', JSON.stringify(res.user));
-      // Do not force password change on login; let the user change password via sidebar
-      navigate('/admin/dashboard');
+      
+      if (res.user.user_type === 'researcher') {
+        localStorage.setItem('researcher_token', res.token);
+        localStorage.setItem('researcher_user', JSON.stringify(res.user));
+        navigate('/researcher/dashboard');
+      } else {
+        // Default to admin
+        localStorage.setItem('admin_token', res.token);
+        localStorage.setItem('admin_user', JSON.stringify(res.user));
+        navigate('/admin/dashboard');
+      }
     } catch (err) {
       setError(err.message);
     } finally {

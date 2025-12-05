@@ -8,6 +8,7 @@ export default function VisitorPayments() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('telebirr');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [paymentProofFile, setPaymentProofFile] = useState(null);
   
   const [pendingRequests, setPendingRequests] = useState([]);
   const [paymentHistory, setPaymentHistory] = useState([]);
@@ -37,19 +38,25 @@ export default function VisitorPayments() {
   const handlePayClick = (request) => {
     setSelectedRequest(request);
     setSelectedPaymentMethod('telebirr'); // Default
+    setPaymentProofFile(null);
     setShowUploadModal(true);
   };
 
   const handleUploadSubmit = (e) => {
     e.preventDefault();
     
+    let proofUrl = 'https://via.placeholder.com/150';
+    if (paymentProofFile) {
+      proofUrl = URL.createObjectURL(paymentProofFile);
+    }
+
     const paymentData = {
         request_id: selectedRequest.request_id,
         site: selectedRequest.site_name,
         amount: selectedRequest.amount || 500, // Fallback
         method: selectedPaymentMethod,
         date: new Date().toISOString().split('T')[0],
-        proof_url: 'https://via.placeholder.com/150' // Mock upload
+        proof_url: proofUrl
     };
 
     visitorService.submitPayment(paymentData).then(() => {
@@ -186,7 +193,13 @@ export default function VisitorPayments() {
                             <form onSubmit={handleUploadSubmit}>
                                 <div className="mb-3">
                                     <label className="form-label">Upload Proof (Screenshot/Receipt)</label>
-                                    <input type="file" className="form-control" required accept="image/*,.pdf" />
+                                    <input 
+                                      type="file" 
+                                      className="form-control" 
+                                      required 
+                                      accept="image/*,.pdf"
+                                      onChange={(e) => setPaymentProofFile(e.target.files[0])} 
+                                    />
                                 </div>
                                 <button type="submit" className="btn btn-primary w-100">Submit Payment Proof</button>
                             </form>

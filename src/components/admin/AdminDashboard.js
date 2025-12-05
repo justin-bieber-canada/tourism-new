@@ -9,7 +9,6 @@ export default function AdminDashboard() {
   const [summary, setSummary] = useState(null);
   const [requests, setRequests] = useState([]);
   const [payments, setPayments] = useState([]);
-  const [showAddSite, setShowAddSite] = useState(false);
   const [showAddUser, setShowAddUser] = useState(false);
   const [addUserType, setAddUserType] = useState('guide');
 
@@ -25,7 +24,6 @@ export default function AdminDashboard() {
     getPayments().then(setPayments);
   };
 
-  const onSiteCreated = (site) => { refresh(); };
   const onUserCreated = (user) => { refresh(); };
 
   return (
@@ -34,7 +32,6 @@ export default function AdminDashboard() {
       <main className="admin-main">
         <header className="admin-main-header">
           <div className="admin-actions">
-            <button className="btn-primary" onClick={() => setShowAddSite(true)}>Add Site</button>
             <button className="btn-outline" onClick={() => { setAddUserType('guide'); setShowAddUser(true); }}>Add Guide</button>
             <button className="btn-outline" onClick={() => { setAddUserType('researcher'); setShowAddUser(true); }}>Add Researcher</button>
           </div>
@@ -95,7 +92,6 @@ export default function AdminDashboard() {
           <div className="log">Site 'Historical Site 3' approved</div>
         </section>
       </main>
-      {showAddSite && <AddSiteModal onClose={() => setShowAddSite(false)} onCreated={onSiteCreated} />}
       {showAddUser && <AddUserModal defaultType={addUserType} onClose={() => setShowAddUser(false)} onCreated={onUserCreated} />}
     </div>
   );

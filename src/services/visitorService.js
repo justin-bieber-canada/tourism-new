@@ -65,5 +65,20 @@ export const visitorService = {
 
   submitFeedback: (requestId, rating, comment) => {
     return Promise.resolve(dataService.addFeedback(requestId, rating, comment));
+  },
+
+  updateProfile: (user) => {
+    return Promise.resolve(dataService.updateUser(user));
+  },
+
+  changePassword: (userId, newPassword) => {
+    // In a real app, we would verify old password first
+    const users = dataService.getUsers();
+    const user = users.find(u => u.user_id === userId);
+    if (user) {
+      user.password = newPassword;
+      return Promise.resolve(dataService.updateUser(user));
+    }
+    return Promise.reject(new Error('User not found'));
   }
 };
