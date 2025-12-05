@@ -33,7 +33,6 @@ export default function AdminDashboard() {
       <AdminSidebar />
       <main className="admin-main">
         <header className="admin-main-header">
-          <h1>Dashboard</h1>
           <div className="admin-actions">
             <button className="btn-primary" onClick={() => setShowAddSite(true)}>Add Site</button>
             <button className="btn-outline" onClick={() => { setAddUserType('guide'); setShowAddUser(true); }}>Add Guide</button>

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { visitorService } from '../../services/visitorService';
 
 function RegisterForm() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -21,8 +23,21 @@ function RegisterForm() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle registration logic here
-    console.log('Registration data:', formData);
+    
+    // Map form data to user object structure
+    const userData = {
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      email: formData.email,
+      phone: formData.phone,
+      password: formData.password, // In real app, hash this!
+      username: formData.email // Use email as username for simplicity
+    };
+
+    visitorService.register(userData).then(() => {
+      alert('Registration successful! Please login.');
+      navigate('/login');
+    });
   };
 
 

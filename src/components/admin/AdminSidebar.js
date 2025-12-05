@@ -7,7 +7,7 @@ export default function AdminSidebar() {
   const signout = () => {
     localStorage.removeItem('admin_token');
     localStorage.removeItem('admin_user');
-    navigate('/admin/login');
+    navigate('/login');
   };
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -38,13 +38,30 @@ export default function AdminSidebar() {
         </div>
         <nav>
           <div className="admin-nav-links">
-            <NavLink to="/admin/dashboard" onClick={closeMobile}>Dashboard</NavLink>
-            <NavLink to="/admin/users" onClick={closeMobile}>Users</NavLink>
-            <NavLink to="/admin/sites" onClick={closeMobile}>Sites</NavLink>
-            <NavLink to="/admin/requests" onClick={closeMobile}>Requests</NavLink>
-            <NavLink to="/admin/payments" onClick={closeMobile}>Payments</NavLink>
-            <NavLink to="/admin/reports" onClick={closeMobile}>Reports</NavLink>
-            <NavLink to="/admin/change-password" onClick={closeMobile}>Change Password</NavLink>
+            <NavLink to="/admin/dashboard" onClick={closeMobile}>
+              <span className="nav-icon">📊</span>
+              <span className="nav-label">Dashboard</span>
+            </NavLink>
+            <NavLink to="/admin/users" onClick={closeMobile}>
+              <span className="nav-icon">👥</span>
+              <span className="nav-label">Users</span>
+            </NavLink>
+            <NavLink to="/admin/sites" onClick={closeMobile}>
+              <span className="nav-icon">🏞️</span>
+              <span className="nav-label">Sites</span>
+            </NavLink>
+            <NavLink to="/admin/requests" onClick={closeMobile}>
+              <span className="nav-icon">📝</span>
+              <span className="nav-label">Requests</span>
+            </NavLink>
+            <NavLink to="/admin/payments" onClick={closeMobile}>
+              <span className="nav-icon">💳</span>
+              <span className="nav-label">Payments</span>
+            </NavLink>
+            <NavLink to="/admin/reports" onClick={closeMobile}>
+              <span className="nav-icon">📈</span>
+              <span className="nav-label">Reports</span>
+            </NavLink>
           </div>
           <div className="admin-nav-bottom">
             <button className="nav-logout" onClick={signout}>Logout</button>

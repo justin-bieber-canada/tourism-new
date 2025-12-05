@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { visitorService } from '../../services/visitorService';
 
 
 function LoginForm() {
@@ -14,26 +15,31 @@ function LoginForm() {
     });
   };
 
+  const navigate = useNavigate();
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Simple local check: if admin credentials entered, redirect to admin dashboard
     const { username, password } = formData;
-    console.log('Login data:', formData);
-    // Default admin credentials (change in adminService.mock.js if needed)
+
+    // Admin Login Check
     if (username === 'admin' && password === 'admin123') {
-      // store a mock admin token and user info so AdminRoute allows access
       localStorage.setItem('admin_token', 'mock-admin-token');
-      localStorage.setItem('admin_user', JSON.stringify({ username: 'admin', name: 'Administrator' }));
-      // Do not force change password; let admin use the Change Password link when desired
+      localStorage.setItem('admin_user', JSON.stringify({ username: 'admin', name: 'Administrator', role: 'admin' }));
       navigate('/admin/dashboard');
       return;
     }
 
-    // Otherwise proceed with normal login (visitor/user) flow - replace with real auth
-    alert('Login successful (mock). For admin use username: admin and password: admin123');
+    // Visitor Login Check
+    visitorService.login(username, password)
+      .then(user => {
+        localStorage.setItem('visitor_token', 'mock-visitor-token');
+        localStorage.setItem('visitor_user', JSON.stringify(user));
+        navigate('/visitor/dashboard');
+      })
+      .catch(err => {
+        alert('Invalid credentials. Please register if you do not have an account.');
+      });
   };
-
-  const navigate = useNavigate();
 
 
 
