@@ -1,4 +1,3 @@
-// adminService: chooses between mock data and real API client based on env
 import * as mock from './adminService.mock';
 import * as api from './adminApi';
 
@@ -16,11 +15,14 @@ export const createUser = (...args) => (USE_MOCK ? mock.createUser(...args) : ap
 export const toggleUserStatus = (...args) => (USE_MOCK ? mock.toggleUserStatus(...args) : api.toggleUserStatus(...args));
 export const deleteUser = (...args) => (USE_MOCK ? mock.deleteUser(...args) : api.deleteUser(...args));
 export const deleteSite = (...args) => (USE_MOCK ? mock.deleteSite(...args) : api.deleteSite(...args));
+export const updateSite = (...args) => (USE_MOCK ? mock.updateSite(...args) : api.updateSite(...args));
+export const updateSiteStatus = (...args) => (USE_MOCK ? mock.updateSiteStatus(...args) : api.updateSiteStatus(...args));
 export const approveRequest = (...args) => (USE_MOCK ? mock.approveRequest(...args) : api.approveRequest(...args));
 export const rejectRequest = (...args) => (USE_MOCK ? mock.rejectRequest(...args) : api.rejectRequest(...args));
 export const assignGuide = (...args) => (USE_MOCK ? mock.assignGuide(...args) : api.assignGuide(...args));
 export const verifyPayment = (...args) => (USE_MOCK ? mock.verifyPayment(...args) : api.verifyPayment(...args));
 export const changePassword = (...args) => (USE_MOCK ? mock.changePassword(...args) : api.changePassword(...args));
+export const updateProfile = (...args) => (USE_MOCK ? mock.updateProfile(...args) : api.updateProfile(...args));
 
 export default {
   authenticate,
@@ -30,4 +32,17 @@ export default {
   getSites,
   getRequests,
   getPayments,
+  createSite,
+  createUser,
+  toggleUserStatus,
+  deleteUser,
+  deleteSite,
+  updateSite,
+  updateSiteStatus,
+  approveRequest,
+  rejectRequest,
+  assignGuide,
+  verifyPayment,
+  changePassword,
+  updateProfile,
 };

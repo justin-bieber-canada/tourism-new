@@ -19,14 +19,12 @@ export const guideService = {
   },
 
   getAssignedRequests: (guideId) => {
-    const requests = dataService.getRequests();
-    // Filter requests assigned to this guide
-    // Note: In a real app, we'd filter by assigned_guide_id. 
-    // For demo, if no assigned_guide_id exists on requests yet, we might show all 'approved' requests 
-    // or mock some assignments. Let's assume we'll add assignment logic or just show approved ones for now as "Available to Pick" 
-    // or strictly assigned ones. The doc says "Admin assigns".
-    // Let's mock that some requests are assigned to this guide (id 888) if they don't have one, for demo purposes.
-    return Promise.resolve(requests.filter(r => r.assigned_guide_id === guideId || (r.request_status === 'approved' && !r.assigned_guide_id)));
+    return new Promise(resolve => {
+      setTimeout(() => {
+        const requests = dataService.getRequests();
+        resolve(requests.filter(r => r.assigned_guide_id === guideId || (r.request_status === 'approved' && !r.assigned_guide_id)));
+      }, 800);
+    });
   },
 
   updateRequestStatus: (requestId, status, notes) => {

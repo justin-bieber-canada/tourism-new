@@ -9,20 +9,17 @@ const admin = {
 export function authenticate(username, password) {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
-      // Check hardcoded admin first (legacy)
       if (username === admin.username && password === admin.password) {
         resolve({ token: 'mock-admin-token', user: { username: 'admin', name: 'Administrator', user_type: 'admin' } });
         return;
       }
 
-      // Check dataService users
       const user = dataService.findUser(username, password);
       if (user) {
         if (!user.is_active) {
           reject(new Error('Account is deactivated'));
           return;
         }
-        // Generate a simple token based on type
         const token = user.user_type === 'admin' ? 'mock-admin-token' : 'mock-researcher-token';
         resolve({ token, user });
       } else {
@@ -37,13 +34,13 @@ export function signout() {
 }
 
 export function getSummary() {
-  return Promise.resolve(dataService.getSummary());
+  return new Promise(resolve => setTimeout(() => resolve(dataService.getSummary()), 800));
 }
 
-export function getUsers() { return Promise.resolve(dataService.getUsers()); }
-export function getSites() { return Promise.resolve(dataService.getSites()); }
-export function getRequests() { return Promise.resolve(dataService.getRequests()); }
-export function getPayments() { return Promise.resolve(dataService.getPayments()); }
+export function getUsers() { return new Promise(resolve => setTimeout(() => resolve(dataService.getUsers()), 800)); }
+export function getSites() { return new Promise(resolve => setTimeout(() => resolve(dataService.getSites()), 800)); }
+export function getRequests() { return new Promise(resolve => setTimeout(() => resolve(dataService.getRequests()), 800)); }
+export function getPayments() { return new Promise(resolve => setTimeout(() => resolve(dataService.getPayments()), 800)); }
 
 export function createSite(site) {
   return Promise.resolve(dataService.addSite(site));
@@ -63,6 +60,15 @@ export function deleteUser(userId) {
 
 export function deleteSite(siteId) {
   return Promise.resolve(dataService.deleteSite(siteId));
+}
+
+export function updateSite(site) {
+  return Promise.resolve(dataService.updateSite(site));
+}
+
+export function updateSiteStatus(siteId, isApproved) {
+  const status = isApproved ? 'approved' : 'rejected';
+  return Promise.resolve(dataService.updateSite({ site_id: siteId, is_approved: isApproved, status: status }));
 }
 
 export function approveRequest(requestId) {
@@ -92,6 +98,18 @@ export function changePassword(username, oldPassword, newPassword) {
   });
 }
 
+export function updateProfile(username, data) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (username !== admin.username) return reject(new Error('User not found'));
+      if (data.name) {
+        // admin.name = data.name; 
+      }
+      resolve({ ok: true, user: { ...admin, ...data } });
+    }, 300);
+  });
+}
+
 export default {
   authenticate,
   signout,
@@ -109,4 +127,5 @@ export default {
   assignGuide,
   verifyPayment,
   changePassword,
+  updateProfile,
 };

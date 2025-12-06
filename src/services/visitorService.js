@@ -28,12 +28,20 @@ export const visitorService = {
   },
 
   getSites: () => {
-    return Promise.resolve(dataService.getSites());
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(dataService.getSites());
+      }, 800);
+    });
   },
 
   getSiteById: (id) => {
-    const sites = dataService.getSites();
-    return Promise.resolve(sites.find(s => s.site_id === parseInt(id)));
+    return new Promise(resolve => {
+      setTimeout(() => {
+        const sites = dataService.getSites();
+        resolve(sites.find(s => s.site_id === parseInt(id)));
+      }, 800);
+    });
   },
 
   createRequest: (requestData) => {

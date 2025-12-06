@@ -65,6 +65,14 @@ export function deleteSite(siteId) {
   return request(`/admin/sites/${siteId}`, { method: 'DELETE' });
 }
 
+export function updateSite(site) {
+  return request(`/admin/sites/${site.site_id}`, { method: 'PUT', body: JSON.stringify(site) });
+}
+
+export function updateSiteStatus(siteId, isApproved) {
+  return request(`/admin/sites/${siteId}/status`, { method: 'PUT', body: JSON.stringify({ is_approved: isApproved }) });
+}
+
 export function approveRequest(requestId, payload = {}) {
   return request(`/admin/requests/${requestId}/approve`, { method: 'POST', body: JSON.stringify(payload) });
 }
@@ -85,6 +93,10 @@ export function changePassword(username, oldPassword, newPassword) {
   return request('/admin/auth/change-password', { method: 'POST', body: JSON.stringify({ username, oldPassword, newPassword }) });
 }
 
+export function updateProfile(username, data) {
+  return request('/admin/auth/profile', { method: 'PUT', body: JSON.stringify({ username, ...data }) });
+}
+
 export default {
   authenticate,
   signout,
@@ -93,5 +105,17 @@ export default {
   getSites,
   getRequests,
   getPayments,
+  createSite,
+  createUser,
   toggleUserStatus,
+  deleteUser,
+  deleteSite,
+  updateSite,
+  updateSiteStatus,
+  approveRequest,
+  rejectRequest,
+  assignGuide,
+  verifyPayment,
+  changePassword,
+  updateProfile,
 };
