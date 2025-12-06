@@ -39,10 +39,6 @@ function Contact() {
           ))}
         </div>
         
-        <div className="contact-support">
-          <p>Response Time: Within 24 hours</p>
-          <p className="support-email">Primary Contact: yoseph2719@gmail.com</p>
-        </div>
       </div>
     </section>
   );

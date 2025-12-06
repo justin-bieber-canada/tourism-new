@@ -5,9 +5,9 @@ const initialData = {
     { user_id: 1, username: 'admin', password: 'admin123', first_name: 'Admin', last_name: 'User', email: 'admin@example.com', user_type: 'admin', is_active: true }
   ],
   sites: [
-    { site_id: 1, site_name: 'Lalibela', location: 'Lalibela, Amhara', description: 'Rock-hewn churches.', price: 500, guide_fee: 200, image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Bet_Giyorgis_Lalibela.jpg/1200px-Bet_Giyorgis_Lalibela.jpg', is_approved: true },
-    { site_id: 2, site_name: 'Simien Mountains', location: 'Gondar, Amhara', description: 'Spectacular landscapes.', price: 300, guide_fee: 150, image: 'https://whc.unesco.org/uploads/thumbs/site_0009_0008-750-750-20151104113424.jpg', is_approved: true },
-    { site_id: 3, site_name: 'Axum Obelisk', location: 'Axum, Tigray', description: 'Ancient obelisks.', price: 400, guide_fee: 180, image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Rome_Stele.jpg/800px-Rome_Stele.jpg', is_approved: true }
+    { site_id: 1, site_name: 'Lalibela', location: 'Lalibela, Amhara', description: 'Rock-hewn churches.', price: 500, guide_fee: 200, image: 'https://whc.unesco.org/uploads/thumbs/site_0018_0016-1000-667-20151104173458.jpg', is_approved: true },
+    { site_id: 2, site_name: 'Simien Mountains', location: 'Gondar, Amhara', description: 'Spectacular landscapes.', price: 300, guide_fee: 150, image: 'https://simienpark.org/wp-content/uploads/2017/10/simien-landscape-small.jpg', is_approved: true },
+    { site_id: 3, site_name: 'Axum Obelisk', location: 'Axum, Tigray', description: 'Ancient obelisks.', price: 400, guide_fee: 180, image: 'https://media.istockphoto.com/id/186914973/photo/obelisk-in-the-aksum-kingdom-ethiopia.jpg?s=612x612&w=0&k=20&c=xcINJxnz71uvfROg0uby9QrRlyNeQesLkWr5JLnXmGE=', is_approved: true }
   ],
   requests: [],
   payments: [],

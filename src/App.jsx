@@ -1,9 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './components/home/Home';
-import Login from './components/visitor/pages/Login';
-import Register from './components/visitor/pages/Register';
-import Forgot from './components/visitor/pages/Forgot';
+import Login from './components/home/pages/Login';
+import Register from './components/home/pages/Register';
+import Forgot from './components/home/pages/Forgot';
 // Admin
 import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';

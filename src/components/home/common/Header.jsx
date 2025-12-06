@@ -17,7 +17,7 @@ function Header() {
   return (
     <header className="header">
       <nav className="nav">
-        <div className="logo">Tourism_MS</div>
+        <div className="logo">Tourism MS</div>
         
         <div 
           className={`menu-toggle ${isMenuOpen ? 'active' : ''}`} 
@@ -30,7 +30,7 @@ function Header() {
         </div>
         
         <div className={`nav-links ${isMenuOpen ? 'active' : ''}`} id="navLinks">
-          <Link to="/" className="btn" onClick={closeMenu}>Home</Link>
+          <a href="#home" className="btn" onClick={closeMenu}>Home</a>
           <a href="#about" className="btn" onClick={closeMenu}>About</a>
           <a href="#feature" className="btn" onClick={closeMenu}>Feature</a>
           <a href="#contact" className="btn" onClick={closeMenu}>Contact</a>

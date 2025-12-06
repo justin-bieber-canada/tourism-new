@@ -13,7 +13,6 @@
           align-items: center;
           height: 100vh;
           margin: 0;
-          transition: background-color 0.3s ease;
         }
 
         .login-container {
@@ -23,13 +22,6 @@
             width: 100%;
             max-width: 400px;
             padding: 40px;
-            animation: fadeIn 0.5s ease-out;
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .logo {
@@ -65,7 +57,6 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             font-size: 16px;
-            transition: all 0.3s;
         }
 
         .form-group input:focus {
@@ -84,47 +75,43 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
             margin-top: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         button[type="submit"]:hover {
             background: var(--accent-secondary);
-            transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
         .forgot-password {
             text-align: center;
             margin-top: 20px;
+        }
+        
+        .forgot-password a {
+            color: var(--accent-primary);
+            text-decoration: none;
             font-size: 14px;
         }
-
-        .forgot-password a {
-            color: #1a2a6c;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
+        
         .forgot-password a:hover {
-            color: #2a3a9c;
             text-decoration: underline;
         }
-
+        
         .register-link {
             text-align: center;
-            margin-top: 10px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--text-secondary);
         }
-
+        
         .register-link a {
-            color: #1a2a6c;
-            font-weight: 600;
+            color: var(--accent-primary);
             text-decoration: none;
+            font-weight: 600;
         }
-
+        
         .register-link a:hover {
             text-decoration: underline;
         }
@@ -261,4 +248,3 @@
                 box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
             }
         }
-        
