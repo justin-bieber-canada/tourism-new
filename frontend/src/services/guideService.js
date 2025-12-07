@@ -27,14 +27,26 @@ export const guideService = {
     });
   },
 
-  updateRequestStatus: (requestId, status, notes) => {
+  updateRequestStatus: (requestId, status, notes, guideId) => {
     const data = JSON.parse(localStorage.getItem('tourism_app_data'));
     const reqIndex = data.requests.findIndex(r => r.request_id === requestId);
     if (reqIndex !== -1) {
-      data.requests[reqIndex].request_status = status;
-      if (notes) data.requests[reqIndex].guide_notes = notes;
+      const request = data.requests[reqIndex];
+      request.request_status = status;
+
+      // When a guide accepts, persist the assignment so only their schedule shows it
+      if (status === 'accepted_by_guide' && guideId) {
+        request.assigned_guide_id = guideId;
+      }
+
+      // When a tour is completed, drop any pending/related payments for this request
+      if (status === 'completed' && Array.isArray(data.payments)) {
+        data.payments = data.payments.filter(p => p.request_id !== requestId);
+      }
+
+      if (notes) request.guide_notes = notes;
       localStorage.setItem('tourism_app_data', JSON.stringify(data));
-      return Promise.resolve(data.requests[reqIndex]);
+      return Promise.resolve(request);
     }
     return Promise.reject(new Error('Request not found'));
   },

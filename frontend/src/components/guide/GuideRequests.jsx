@@ -27,8 +27,11 @@ export default function GuideRequests() {
   };
 
   const handleStatusChange = async (requestId, newStatus) => {
+    const user = JSON.parse(localStorage.getItem('guide_user'));
+    const guideId = user?.user_id;
+
     if (window.confirm(`Are you sure you want to ${newStatus === 'accepted_by_guide' ? 'accept' : 'reject'} this request?`)) {
-      const success = await guideService.updateRequestStatus(requestId, newStatus);
+      const success = await guideService.updateRequestStatus(requestId, newStatus, undefined, guideId);
       if (success) {
         loadRequests();
       } else {

@@ -1,5 +1,5 @@
 // adminApi.js — thin wrapper around fetch to call backend admin endpoints
-const BASE = process.env.REACT_APP_ADMIN_API_URL || '/api';
+const BASE = process.env.REACT_APP_ADMIN_API_URL || process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 async function request(path, options = {}) {
   const url = `${BASE}${path}`;

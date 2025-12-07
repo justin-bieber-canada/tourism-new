@@ -2,9 +2,13 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Project Layout
+- `frontend/` – React app (the provided UI code). Run commands from inside this folder.
+- `backend/` – PHP + MySQL backend scaffold (PDO, Chapa stubs, JWT).
+
 ## Available Scripts
 
-In the project directory, you can run:
+In the `frontend` directory, you can run:
 
 ### `npm start`
 
@@ -44,6 +48,19 @@ You don't have to ever use `eject`. The curated feature set is suitable for smal
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+
+## Backend (PHP + MySQL)
+- Location: `backend/` contains the PHP + PDO backend scaffold with REST routes for auth, users, sites, guide requests, payments (Chapa + proofs), notifications, and reviews.
+- Requirements: PHP 8.1+, MySQL, Composer, Apache (with mod_rewrite) or `php -S` for local dev.
+- Env vars: copy `backend/.env.example` to `backend/.env` and set `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`, `APP_URL`, `API_URL`, `CHAPA_SECRET_KEY`, `CHAPA_PUBLIC_KEY`, `JWT_SECRET`, `UPLOAD_DIR`, `MAX_UPLOAD_SIZE`.
+- Setup:
+	1. `cd backend`
+	2. `composer install`
+	3. Create the MySQL schema (run your provided SQL once)
+	4. `cp .env.example .env` and update values
+	5. Serve locally: `php -S localhost:8000 -t public` (or point Apache docroot to `backend/public`)
+- Approval guard: `PATCH /api/requests/{id}/approve` only approves when a confirmed payment exists for that request; otherwise it returns `400` with `"Visitor has not paid or payment not verified."`
+- Health check (XAMPP): `GET http://localhost:8000/api/health` should return `{status:"ok", db:"connected"}` if PHP can reach MySQL.
 
 ### Code Splitting
 
