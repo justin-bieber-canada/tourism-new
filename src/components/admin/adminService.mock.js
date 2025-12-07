@@ -80,7 +80,20 @@ export function rejectRequest(requestId) {
 }
 
 export function assignGuide(requestId, payload) {
-  return Promise.resolve({ ok: true });
+  const data = JSON.parse(localStorage.getItem('tourism_app_data'));
+  const reqIndex = data.requests.findIndex(r => r.request_id === requestId);
+
+  if (reqIndex === -1) {
+    return Promise.reject(new Error('Request not found'));
+  }
+
+  const request = data.requests[reqIndex];
+  request.assigned_guide_id = payload?.guide_id;
+  // Mark as assigned so the correct site agent sees it in requests/schedule
+  request.request_status = 'assigned';
+
+  localStorage.setItem('tourism_app_data', JSON.stringify(data));
+  return Promise.resolve(request);
 }
 
 export function verifyPayment(paymentId) {

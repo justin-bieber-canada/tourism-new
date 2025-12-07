@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import AdminSidebar from './AdminSidebar';
 import './admin.css';
-import { getRequests, approveRequest, rejectRequest, assignGuide } from './adminService';
+import { getRequests, getPayments, approveRequest, rejectRequest, assignGuide } from './adminService';
 import ThemeToggle from '../common/ThemeToggle';
 
 
@@ -9,11 +9,16 @@ export default function AdminRequests() {
   const [requests, setRequests] = useState([]);
   const [assigningId, setAssigningId] = useState(null);
   const [guideIdInput, setGuideIdInput] = useState('');
+  const [payments, setPayments] = useState([]);
 
-  useEffect(() => { getRequests().then(setRequests); }, []);
+  useEffect(() => {
+    getRequests().then(setRequests);
+    getPayments().then(setPayments);
+  }, []);
 
   const refresh = () => {
     getRequests().then(setRequests);
+    getPayments().then(setPayments);
     setAssigningId(null);
     setGuideIdInput('');
   };
@@ -24,6 +29,11 @@ export default function AdminRequests() {
   };
 
   const handleApprove = async (id) => {
+    const hasVerifiedPayment = payments.some(p => p.request_id === id && p.payment_status === 'confirmed');
+    if (!hasVerifiedPayment) {
+      alert('Visitor has not paid or payment is not verified by Admin. Please verify payment before approving.');
+      return;
+    }
     try { await approveRequest(id); refresh(); } catch (err) { alert('Approve failed: ' + err.message); }
   };
 

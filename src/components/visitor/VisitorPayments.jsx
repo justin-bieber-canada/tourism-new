@@ -2,17 +2,21 @@ import React, { useState, useEffect } from 'react';
 import VisitorSidebar from './VisitorSidebar';
 import './visitor.css';
 import { visitorService } from '../../services/visitorService';
+import { paymentService } from '../../services/paymentService';
 import ThemeToggle from '../common/ThemeToggle';
 
 export default function VisitorPayments() {
   const [activeTab, setActiveTab] = useState('pending'); // pending, history
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('telebirr');
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('chapa');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [paymentProofFile, setPaymentProofFile] = useState(null);
+    const [chapaLoading, setChapaLoading] = useState(false);
   
   const [pendingRequests, setPendingRequests] = useState([]);
   const [paymentHistory, setPaymentHistory] = useState([]);
+    const [showReceiptModal, setShowReceiptModal] = useState(false);
+    const [receiptPayment, setReceiptPayment] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -38,10 +42,68 @@ export default function VisitorPayments() {
 
   const handlePayClick = (request) => {
     setSelectedRequest(request);
-    setSelectedPaymentMethod('telebirr'); // Default
+    setSelectedPaymentMethod('chapa'); // Default to Chapa so online flow is visible immediately
     setPaymentProofFile(null);
     setShowUploadModal(true);
   };
+
+    const handleChapaCheckout = async () => {
+        if (!selectedRequest) return;
+        const user = JSON.parse(localStorage.getItem('visitor_user'));
+        if (!user) {
+            alert('Please login first');
+            return;
+        }
+
+        setChapaLoading(true);
+        try {
+            const amount = selectedRequest.amount || selectedRequest.price || selectedRequest.total || 0;
+            if (!amount || Number(amount) <= 0) {
+                alert('Unable to start Chapa: amount is missing. Please ensure the request has a price.');
+                return;
+            }
+            const payload = {
+                amount,
+                currency: 'ETB',
+                email: user.email || 'guest@example.com',
+                first_name: user.first_name || 'Visitor',
+                last_name: user.last_name || 'User',
+                // Unique reference per payment
+                tx_ref: `tourism_${selectedRequest.request_id}_${Date.now()}`,
+                return_url: `${window.location.origin}/visitor/payments`,
+                callback_url: `${window.location.origin}/api/payments/chapa/callback`,
+                meta: {
+                    request_id: selectedRequest.request_id,
+                    visitor_id: user.user_id,
+                    site: selectedRequest.site_name
+                }
+            };
+
+            const res = await paymentService.createChapaPayment(payload);
+            if (res?.checkout_url) {
+                // Record payment locally so Admin can see it immediately
+                const paymentData = {
+                    request_id: selectedRequest.request_id,
+                    site: selectedRequest.site_name,
+                    amount,
+                    method: 'chapa',
+                    date: new Date().toISOString().split('T')[0],
+                    proof_url: null,
+                    visitor_id: user.user_id,
+                    visitor_name: `${user.first_name || 'Visitor'} ${user.last_name || ''}`.trim(),
+                    tx_ref: res.tx_ref || payload.tx_ref,
+                };
+                visitorService.submitPayment(paymentData);
+                window.location.href = res.checkout_url;
+            } else {
+                alert('Could not start Chapa payment. Please try again or use another method.');
+            }
+        } catch (err) {
+            alert(err.message || 'Chapa init failed');
+        } finally {
+            setChapaLoading(false);
+        }
+    };
 
   const handleUploadSubmit = (e) => {
     e.preventDefault();
@@ -57,7 +119,9 @@ export default function VisitorPayments() {
         amount: selectedRequest.amount || 500, // Fallback
         method: selectedPaymentMethod,
         date: new Date().toISOString().split('T')[0],
-        proof_url: proofUrl
+        proof_url: proofUrl,
+        visitor_id: selectedRequest.visitor_id,
+        visitor_name: selectedRequest.visitor_name
     };
 
     visitorService.submitPayment(paymentData).then(() => {
@@ -129,6 +193,7 @@ export default function VisitorPayments() {
                                 <th>Date</th>
                                 <th>Method</th>
                                 <th>Status</th>
+                                <th>Receipt</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -140,9 +205,17 @@ export default function VisitorPayments() {
                                     <td>{p.date}</td>
                                     <td>{p.method}</td>
                                     <td><span className={`badge ${p.payment_status === 'confirmed' ? 'bg-success' : 'bg-secondary'}`}>{p.payment_status}</span></td>
+                                    <td>
+                                        <button 
+                                          className="btn btn-sm btn-outline-primary" 
+                                          onClick={() => { setReceiptPayment(p); setShowReceiptModal(true); }}
+                                        >
+                                            View
+                                        </button>
+                                    </td>
                                 </tr>
                             ))}
-                            {paymentHistory.length === 0 && <tr><td colSpan="6" className="text-center">No payment history.</td></tr>}
+                            {paymentHistory.length === 0 && <tr><td colSpan="7" className="text-center">No payment history.</td></tr>}
                         </tbody>
                     </table>
                 </div>
@@ -154,57 +227,78 @@ export default function VisitorPayments() {
             <div className="admin-modal-backdrop">
                 <div className="admin-modal" style={{maxWidth: '600px'}}>
                     <div className="admin-modal-header">
-                        <h3>Make Payment for Request #{selectedRequest?.id}</h3>
+                        <h3>Make Payment for Request #{selectedRequest?.request_id}</h3>
                         <button className="btn-ghost text-dark" onClick={() => setShowUploadModal(false)}>✕</button>
                     </div>
                     <div className="admin-modal-body">
-                        <div className="mb-3">
-                            <label className="form-label">Select Payment Method</label>
-                            <select className="form-select" value={selectedPaymentMethod} onChange={(e) => setSelectedPaymentMethod(e.target.value)}>
-                                <option value="telebirr">Telebirr</option>
-                                <option value="bank">Bank Transfer</option>
-                                <option value="chapa">Chapa (Online)</option>
-                            </select>
-                        </div>
-
-                        {selectedPaymentMethod === 'telebirr' && (
-                            <div className="alert alert-info">
-                                <strong>Telebirr Payment:</strong><br/>
-                                1. Dial *127#<br/>
-                                2. Pay to Merchant: <strong>123456</strong><br/>
-                                3. Amount: <strong>{selectedRequest?.amount} ETB</strong><br/>
-                                4. Upload screenshot below.
-                            </div>
-                        )}
-
-                        {selectedPaymentMethod === 'bank' && (
-                            <div className="alert alert-info">
-                                <strong>Bank Transfer:</strong><br/>
-                                CBE Account: <strong>1000123456789</strong><br/>
-                                Name: Tourism Agency<br/>
-                                Amount: <strong>{selectedRequest?.amount} ETB</strong><br/>
-                                Upload receipt below.
-                            </div>
-                        )}
-
-                        {selectedPaymentMethod === 'chapa' ? (
-                            <div className="text-center my-4">
-                                <button className="btn btn-lg btn-primary">Proceed to Chapa Secure Payment</button>
-                            </div>
-                        ) : (
-                            <form onSubmit={handleUploadSubmit}>
-                                <div className="mb-3">
-                                    <label className="form-label">Upload Proof (Screenshot/Receipt)</label>
-                                    <input 
-                                      type="file" 
-                                      className="form-control" 
-                                      required 
-                                      accept="image/*,.pdf"
-                                      onChange={(e) => setPaymentProofFile(e.target.files[0])} 
-                                    />
+                        <div className="my-4 d-flex flex-column gap-4">
+                            <div className="p-4 bg-light rounded-3 border">
+                                <div className="row g-3">
+                                    <div className="col-6">
+                                        <small className="text-muted d-block mb-1">Payer</small>
+                                        <div className="fw-bold text-dark">{(JSON.parse(localStorage.getItem('visitor_user'))?.first_name || 'Visitor') + ' ' + (JSON.parse(localStorage.getItem('visitor_user'))?.last_name || '')}</div>
+                                    </div>
+                                    <div className="col-6">
+                                        <small className="text-muted d-block mb-1">Email</small>
+                                        <div className="fw-bold text-dark text-truncate">{JSON.parse(localStorage.getItem('visitor_user'))?.email || 'guest@example.com'}</div>
+                                    </div>
+                                    <div className="col-6">
+                                        <small className="text-muted d-block mb-1">Site</small>
+                                        <div className="fw-bold text-dark">{selectedRequest?.site_name || '—'}</div>
+                                    </div>
+                                    <div className="col-6">
+                                        <small className="text-muted d-block mb-1">Amount</small>
+                                        <div className="fw-bold text-primary fs-5">{(selectedRequest?.amount || selectedRequest?.price || selectedRequest?.total || 0)} ETB</div>
+                                    </div>
                                 </div>
-                                <button type="submit" className="btn btn-primary w-100">Submit Payment Proof</button>
-                            </form>
+                            </div>
+
+                            <div className="text-center">
+                                <button 
+                                    className="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-sm" 
+                                    type="button"
+                                    disabled={chapaLoading}
+                                    onClick={handleChapaCheckout}
+                                    style={{minWidth: '200px', fontWeight: '600'}}
+                                >
+                                    {chapaLoading ? (
+                                        <span><span className="spinner-border spinner-border-sm me-2"></span>Processing...</span>
+                                    ) : (
+                                        'Pay with Chapa'
+                                    )}
+                                </button>
+                                <div className="mt-3 text-muted small">
+                                    <span className="me-2">Secured by Chapa. Supports:</span>
+                                    <span className="badge bg-light text-dark border me-1">Telebirr</span>
+                                    <span className="badge bg-light text-dark border">CBE</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* Receipt Modal - stays until user closes */}
+        {showReceiptModal && receiptPayment && (
+            <div className="admin-modal-backdrop" style={{zIndex: 10000}}>
+                <div className="admin-modal" style={{maxWidth: '520px'}}>
+                    <div className="admin-modal-header">
+                        <h3>Payment Receipt #{receiptPayment.payment_id}</h3>
+                        <button className="btn-ghost text-dark" onClick={() => { setShowReceiptModal(false); setReceiptPayment(null); }}>✕</button>
+                    </div>
+                    <div className="admin-modal-body">
+                        <div className="mb-3"><strong>Site:</strong> {receiptPayment.site}</div>
+                        <div className="mb-3"><strong>Amount:</strong> {receiptPayment.amount} ETB</div>
+                        <div className="mb-3"><strong>Method:</strong> {receiptPayment.method}</div>
+                        <div className="mb-3"><strong>Status:</strong> {receiptPayment.payment_status}</div>
+                        <div className="mb-3"><strong>Date:</strong> {receiptPayment.date || new Date(receiptPayment.created_at).toLocaleString()}</div>
+                        {receiptPayment.tx_ref && <div className="mb-3"><strong>Tx Ref:</strong> {receiptPayment.tx_ref}</div>}
+                        {receiptPayment.proof_url && (
+                            <div className="mb-3">
+                                <strong>Proof:</strong><br/>
+                                <a href={receiptPayment.proof_url} target="_blank" rel="noreferrer">Open proof</a>
+                            </div>
                         )}
                     </div>
                 </div>

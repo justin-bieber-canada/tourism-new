@@ -15,12 +15,43 @@ export default function AdminDashboard() {
   const [addUserType, setAddUserType] = useState('site_agent');
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState([]);
+
+  const NOTIF_KEY = 'admin_notifications';
+
+  const persistNotifications = (list) => {
+    localStorage.setItem(NOTIF_KEY, JSON.stringify(list));
+    setNotifications(list);
+    setUnreadCount(list.filter(n => !n.read).length);
+  };
+
+  const buildRequestNotifications = (reqs) => {
+    return reqs.map(r => ({
+      id: `req-${r.request_id}`,
+      title: r.visitor_name || 'Visitor',
+      message: `${r.site_name || 'Site'} — ${r.request_status?.replace(/_/g, ' ') || 'update'}`,
+      tone: r.request_status === 'accepted_by_guide' ? 'success' : 'warning',
+      read: false,
+      created_at: r.created_at || new Date().toISOString()
+    }));
+  };
+
+  const syncNotifications = (reqs) => {
+    const stored = JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]');
+    const fromRequests = buildRequestNotifications(reqs);
+    const mergedMap = new Map();
+    [...stored, ...fromRequests].forEach(n => {
+      if (!mergedMap.has(n.id)) mergedMap.set(n.id, n);
+    });
+    const merged = Array.from(mergedMap.values()).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    persistNotifications(merged);
+  };
 
   useEffect(() => {
     getSummary().then(setSummary);
     getRequests().then(data => {
       setRequests(data);
-      setUnreadCount(data.length);
+      syncNotifications(data);
     });
     getPayments().then(setPayments);
   }, []);
@@ -29,9 +60,23 @@ export default function AdminDashboard() {
     getSummary().then(setSummary);
     getRequests().then(data => {
       setRequests(data);
-      setUnreadCount(data.length);
+      syncNotifications(data);
     });
     getPayments().then(setPayments);
+  };
+  const markAsRead = (id) => {
+    const updated = notifications.map(n => n.id === id ? { ...n, read: true } : n);
+    persistNotifications(updated);
+  };
+
+  const deleteNotification = (id) => {
+    const updated = notifications.filter(n => n.id !== id);
+    persistNotifications(updated);
+  };
+
+  const markAllAsRead = () => {
+    const updated = notifications.map(n => ({ ...n, read: true }));
+    persistNotifications(updated);
   };
 
   const onUserCreated = (user) => { refresh(); };
@@ -57,7 +102,7 @@ export default function AdminDashboard() {
             <button 
               onClick={() => {
                 setShowNotifications(!showNotifications);
-                if (!showNotifications) setUnreadCount(0);
+                if (!showNotifications) markAllAsRead();
               }}
               style={{
                 background: 'white',
@@ -113,29 +158,53 @@ export default function AdminDashboard() {
                 <div style={{padding: '15px', borderBottom: '1px solid #eee', fontWeight: 'bold', color: '#333'}}>
                   Notifications
                 </div>
-                {requests.length === 0 ? (
-                  <div style={{padding: '20px', textAlign: 'center', color: '#999'}}>No new requests</div>
+                {notifications.length === 0 ? (
+                  <div style={{padding: '20px', textAlign: 'center', color: '#999'}}>No notifications</div>
                 ) : (
                   <ul style={{listStyle: 'none', margin: 0, padding: 0}}>
-                    <li style={{padding: '12px 15px', borderBottom: '1px solid #f5f5f5', display: 'flex', flexDirection: 'column', gap: '4px', backgroundColor: '#f0f9ff'}}>
-                       <div style={{fontWeight: '500', color: '#333'}}>System Notification</div>
-                       <div style={{fontSize: '0.9rem', color: '#666'}}>Site 'Historical Site 3' approved</div>
-                    </li>
-                    <li style={{padding: '12px 15px', borderBottom: '1px solid #f5f5f5', display: 'flex', flexDirection: 'column', gap: '4px', backgroundColor: '#f0f9ff'}}>
-                       <div style={{fontWeight: '500', color: '#333'}}>System Notification</div>
-                       <div style={{fontSize: '0.9rem', color: '#666'}}>Payment #23 confirmed</div>
-                    </li>
-                    <li style={{padding: '12px 15px', borderBottom: '1px solid #f5f5f5', display: 'flex', flexDirection: 'column', gap: '4px', backgroundColor: '#f0f9ff'}}>
-                       <div style={{fontWeight: '500', color: '#333'}}>System Notification</div>
-                       <div style={{fontSize: '0.9rem', color: '#666'}}>User User12 updated profile</div>
-                    </li>
-                    {requests.map(r => (
-                      <li key={r.request_id} style={{padding: '12px 15px', borderBottom: '1px solid #f5f5f5', display: 'flex', flexDirection: 'column', gap: '4px'}}>
-                        <div style={{fontWeight: '500', color: '#333'}}>{r.visitor_name}</div>
-                        <div style={{fontSize: '0.9rem', color: '#666'}}>{r.site_name}</div>
-                        <div style={{fontSize: '0.85rem', color: r.request_status === 'accepted_by_guide' ? '#52c41a' : '#fa8c16'}}>
-                          Status: {formatStatus(r.request_status)}
+                    {notifications.map(notif => (
+                      <li 
+                        key={notif.id} 
+                        style={{
+                          padding: '12px 15px',
+                          borderBottom: '1px solid #f5f5f5',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '6px',
+                          backgroundColor: notif.read ? '#fff' : '#f5f9ff'
+                        }}
+                      >
+                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                          <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                            <span style={{
+                              width: '10px',
+                              height: '10px',
+                              borderRadius: '50%',
+                              background: notif.tone === 'success' ? '#52c41a' : '#fa8c16'
+                            }}></span>
+                            <div style={{fontWeight: '600', color: '#1f2937'}}>{notif.title}</div>
+                          </div>
+                          <div style={{display: 'flex', gap: '8px'}}>
+                            {!notif.read && (
+                              <button 
+                                className="btn-sm"
+                                style={{background: '#e0f2fe', color: '#0ea5e9', border: '1px solid #bae6fd'}}
+                                onClick={() => markAsRead(notif.id)}
+                              >
+                                Mark as read
+                              </button>
+                            )}
+                            <button 
+                              className="btn-sm btn-outline"
+                              style={{color: '#ef4444', borderColor: '#fecdd3'}}
+                              onClick={() => deleteNotification(notif.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </div>
+                        <div style={{fontSize: '0.9rem', color: '#4b5563'}}>{notif.message}</div>
+                        <div style={{fontSize: '0.8rem', color: '#9ca3af'}}>{new Date(notif.created_at).toLocaleString()}</div>
                       </li>
                     ))}
                   </ul>
