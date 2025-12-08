@@ -1,37 +1,37 @@
-import { dataService } from '../../services/dataService';
+import { api } from '../../services/api';
 
-export const getResearcherSummary = (researcherId) => {
-  const sites = dataService.getSites().filter(s => s.researcher_id === researcherId);
+// Researcher flows now hit the real backend so data persists to MySQL.
+
+export const getResearcherSummary = async () => {
+  const sites = await getResearcherSites();
   return {
     totalSites: sites.length,
-    pending: sites.filter(s => !s.is_approved).length,
-    approved: sites.filter(s => s.is_approved).length
+    pending: sites.filter(s => !s.is_approved && s.is_approved !== true).length,
+    approved: sites.filter(s => s.is_approved === true || s.status === 'approved').length,
   };
 };
 
-export const getResearcherSites = (researcherId) => {
-  return dataService.getSites().filter(s => s.researcher_id === researcherId);
+export const getResearcherSites = async () => {
+  const res = await api.get('/sites');
+  return res.data || res;
 };
 
-export const addSite = (site) => {
-  return dataService.addSite(site);
+export const addSite = async (site) => {
+  return await api.post('/sites', site);
 };
 
-export const updateSite = (site) => {
-  // We need to implement update in dataService
-  return dataService.updateSite(site);
+export const updateSite = async (site) => {
+  return await api.patch(`/sites/${site.site_id}`, site);
 };
 
-export const deleteSite = (id) => {
-  return dataService.deleteSite(id);
+export const deleteSite = async (id) => {
+  return await api.delete(`/sites/${id}`);
 };
 
-export const updateUser = (id, data) => {
-  // Implement in dataService
-  return dataService.updateUser(id, data);
+export const updateUser = async (data) => {
+  return await api.patch('/users/me', data);
 };
 
-export const changePassword = (id, newPassword) => {
-  // Implement in dataService
-  return dataService.changePassword(id, newPassword);
+export const changePassword = async (newPassword) => {
+  return await api.patch('/users/me', { password: newPassword });
 };

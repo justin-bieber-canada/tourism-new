@@ -1,101 +1,112 @@
-// adminApi.js — thin wrapper around fetch to call backend admin endpoints
-const BASE = process.env.REACT_APP_ADMIN_API_URL || process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+// adminApi.js — thin wrapper around backend /api endpoints (no mocks)
+import { api } from '../../services/api';
 
-async function request(path, options = {}) {
-  const url = `${BASE}${path}`;
-  const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    ...options,
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || `API error ${res.status}`);
+// Simple helpers that delegate to the shared api client. Token is read from localStorage.
+
+export const authenticate = async (email, password) => {
+  // Reuse the regular auth endpoint; admin user_type is validated server-side
+  return await api.post('/auth/login', { email, password });
+};
+
+export const signout = async () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+};
+
+export const getSummary = async () => {
+  // No summary endpoint exists; derive a lightweight summary from key lists
+  const [users, sites, requests, payments] = await Promise.all([
+    getUsers(),
+    getSites(),
+    getRequests(),
+    getPayments(),
+  ]);
+  return {
+    users: users?.length ?? 0,
+    sites: sites?.length ?? 0,
+    requests: requests?.length ?? 0,
+    payments: payments?.length ?? 0,
+  };
+};
+
+export const getUsers = async () => {
+  const res = await api.get('/admin/users');
+  return res.data || res;
+};
+
+export const getSites = async () => {
+  const res = await api.get('/sites');
+  return res.data || res;
+};
+
+export const getRequests = async () => {
+  const res = await api.get('/requests');
+  // backend returns {requests: [...]}
+  if (Array.isArray(res)) return res;
+  return res.requests || res.data || [];
+};
+
+export const getPayments = async () => {
+  const res = await api.get('/payments');
+  return res.data || res;
+};
+
+export const createSite = async (site) => {
+  return await api.post('/sites', site);
+};
+
+export const createUser = async (user) => {
+  return await api.post('/admin/users', user);
+};
+
+export const toggleUserStatus = async (userId, isActive) => {
+  return await api.put(`/admin/users/${userId}/status`, { is_active: isActive });
+};
+
+export const deleteUser = async (userId) => {
+  return await api.delete(`/admin/users/${userId}`);
+};
+
+export const deleteSite = async (siteId) => {
+  return await api.delete(`/sites/${siteId}`);
+};
+
+export const updateSite = async (site) => {
+  return await api.patch(`/sites/${site.site_id}`, site);
+};
+
+export const updateSiteStatus = async (siteId, isApproved) => {
+  // backend only supports approve route; treat isApproved true => approve, false => reject
+  if (isApproved) {
+    return await api.patch(`/sites/${siteId}/approve`, {});
   }
-  // If no content
-  if (res.status === 204) return null;
-  return res.json();
-}
+  return await api.patch(`/sites/${siteId}/approve`, { is_approved: false });
+};
 
-export function authenticate(username, password) {
-  return request('/admin/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) });
-}
+export const approveRequest = async (requestId) => {
+  return await api.patch(`/requests/${requestId}/approve`, {});
+};
 
-export function signout() {
-  return request('/admin/auth/logout', { method: 'POST' });
-}
+export const rejectRequest = async (requestId) => {
+  return await api.patch(`/requests/${requestId}/reject`, {});
+};
 
-export function getSummary() {
-  return request('/admin/summary');
-}
+export const assignGuide = async (requestId, payload = {}) => {
+  return await api.patch(`/requests/${requestId}/assign-guide`, payload);
+};
 
-export function getUsers() {
-  return request('/admin/users');
-}
+export const verifyPayment = async (paymentId) => {
+  return await api.patch(`/payments/${paymentId}/verify`, {});
+};
 
-export function getSites() {
-  return request('/admin/sites');
-}
+export const changePassword = async (_username, newPassword) => {
+  // There is no dedicated admin change password endpoint; reuse profile update
+  return await api.patch('/users/me', { password: newPassword });
+};
 
-export function getRequests() {
-  return request('/admin/requests');
-}
-
-export function getPayments() {
-  return request('/admin/payments');
-}
-
-export function createSite(site) {
-  return request('/admin/sites', { method: 'POST', body: JSON.stringify(site) });
-}
-
-export function createUser(user) {
-  return request('/admin/users', { method: 'POST', body: JSON.stringify(user) });
-}
-
-export function toggleUserStatus(userId, isActive) {
-  return request(`/admin/users/${userId}/status`, { method: 'PUT', body: JSON.stringify({ is_active: isActive }) });
-}
-
-export function deleteUser(userId) {
-  return request(`/admin/users/${userId}`, { method: 'DELETE' });
-}
-
-export function deleteSite(siteId) {
-  return request(`/admin/sites/${siteId}`, { method: 'DELETE' });
-}
-
-export function updateSite(site) {
-  return request(`/admin/sites/${site.site_id}`, { method: 'PUT', body: JSON.stringify(site) });
-}
-
-export function updateSiteStatus(siteId, isApproved) {
-  return request(`/admin/sites/${siteId}/status`, { method: 'PUT', body: JSON.stringify({ is_approved: isApproved }) });
-}
-
-export function approveRequest(requestId, payload = {}) {
-  return request(`/admin/requests/${requestId}/approve`, { method: 'POST', body: JSON.stringify(payload) });
-}
-
-export function rejectRequest(requestId, payload = {}) {
-  return request(`/admin/requests/${requestId}/reject`, { method: 'POST', body: JSON.stringify(payload) });
-}
-
-export function assignGuide(requestId, payload = {}) {
-  return request(`/admin/requests/${requestId}/assign`, { method: 'POST', body: JSON.stringify(payload) });
-}
-
-export function verifyPayment(paymentId, payload = {}) {
-  return request(`/admin/payments/${paymentId}/verify`, { method: 'POST', body: JSON.stringify(payload) });
-}
-
-export function changePassword(username, oldPassword, newPassword) {
-  return request('/admin/auth/change-password', { method: 'POST', body: JSON.stringify({ username, oldPassword, newPassword }) });
-}
-
-export function updateProfile(username, data) {
-  return request('/admin/auth/profile', { method: 'PUT', body: JSON.stringify({ username, ...data }) });
-}
+export const updateProfile = async (_username, data) => {
+  return await api.patch('/users/me', data);
+};
 
 export default {
   authenticate,

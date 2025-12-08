@@ -1,92 +1,110 @@
-import { dataService } from './dataService';
+import { api } from './api';
 
 export const visitorService = {
-  login: (username, password) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const user = dataService.findUser(username, password);
-        if (user) {
-          if (user.user_type === 'visitor') {
-            resolve(user);
-          } else {
-            reject(new Error('Not a visitor account'));
-          }
-        } else {
-          reject(new Error('Invalid credentials'));
+  login: async (email, password) => {
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      if (response.token) {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+      }
+      return response.user;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  register: async (userData) => {
+    try {
+      const response = await api.post('/auth/register', {
+        ...userData,
+        user_type: 'visitor'
+      });
+      return response.user;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getSites: async () => {
+    try {
+      const response = await api.get('/sites');
+      return response.data || response;
+    } catch (error) {
+      console.error("Failed to fetch sites", error);
+      return [];
+    }
+  },
+
+  getSiteById: async (id) => {
+    try {
+      const response = await api.get(`/sites/${id}`);
+      return response.data || response;
+    } catch (error) {
+      console.error("Failed to fetch site", error);
+      return null;
+    }
+  },
+
+  createRequest: async (requestData) => {
+    return await api.post('/requests', requestData);
+  },
+
+  getMyRequests: async (userId) => {
+    try {
+      const response = await api.get(`/requests?visitor_id=${userId}`);
+      if (Array.isArray(response)) return response;
+      return response.requests || response.data || [];
+    } catch (error) {
+      console.error("Failed to fetch requests", error);
+      return [];
+    }
+  },
+
+  submitPayment: async (paymentData) => {
+    return await api.post('/payments/chapa/create', paymentData);
+  },
+
+  getMyPayments: async (userId) => {
+    try {
+      const requests = await visitorService.getMyRequests(userId);
+      if (!requests || requests.length === 0) return [];
+
+      const payments = [];
+      for (const req of requests) {
+        try {
+          const reqPayments = await api.get(`/payments?request_id=${req.request_id}`);
+           if (Array.isArray(reqPayments)) {
+             payments.push(...reqPayments);
+           } else if (reqPayments.data) {
+             payments.push(...reqPayments.data);
+           } else if (reqPayments.payments) {
+             payments.push(...reqPayments.payments);
+           }
+        } catch (e) {
+          // Ignore errors
         }
-      }, 500);
-    });
-  },
-
-  register: (userData) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const user = dataService.addUser(userData);
-        resolve(user);
-      }, 500);
-    });
-  },
-
-  getSites: () => {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(dataService.getSites());
-      }, 800);
-    });
-  },
-
-  getSiteById: (id) => {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        const sites = dataService.getSites();
-        resolve(sites.find(s => s.site_id === parseInt(id)));
-      }, 800);
-    });
-  },
-
-  createRequest: (requestData) => {
-    return Promise.resolve(dataService.addRequest(requestData));
-  },
-
-  getMyRequests: (userId) => {
-    const requests = dataService.getRequests();
-    return Promise.resolve(requests.filter(r => r.visitor_id === userId));
-  },
-
-  submitPayment: (paymentData) => {
-    return Promise.resolve(dataService.addPayment(paymentData));
-  },
-
-  getMyPayments: (userId) => {
-    // Payments are linked to requests, which are linked to users
-    const requests = dataService.getRequests().filter(r => r.visitor_id === userId);
-    const requestIds = requests.map(r => r.request_id);
-    const payments = dataService.getPayments().filter(p => requestIds.includes(p.request_id));
-    return Promise.resolve(payments);
+      }
+      return payments;
+    } catch (error) {
+      console.error("Failed to fetch payments", error);
+      return [];
+    }
   },
   
-  getHistory: (userId) => {
-      // Combine requests and payments to show history
-      const requests = dataService.getRequests().filter(r => r.visitor_id === userId);
-      return Promise.resolve(requests);
+  getHistory: async (userId) => {
+      return await visitorService.getMyRequests(userId);
   },
 
-  submitFeedback: (requestId, rating, comment) => {
-    return Promise.resolve(dataService.addFeedback(requestId, rating, comment));
+  submitFeedback: async (requestId, rating, comment) => {
+    return await api.post('/reviews', { request_id: requestId, rating, comment });
   },
 
-  updateProfile: (user) => {
-    return Promise.resolve(dataService.updateUser(user));
+  updateProfile: async (user) => {
+    return await api.patch('/users/me', user);
   },
 
-  changePassword: (userId, newPassword) => {
-    // In a real app, we would verify old password first
-    const users = dataService.getUsers();
-    const user = users.find(u => u.user_id === userId);
-    if (user) {
-      user.password = newPassword;
-      return Promise.resolve(dataService.updateUser(user));
-    }
-    return Promise.reject(new Error('User not found'));
+  changePassword: async (userId, newPassword) => {
+    return await api.patch('/users/me', { password: newPassword });
   }
 };

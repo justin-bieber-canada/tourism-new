@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { dataService } from '../../../services/dataService';
-
+import { authService } from '../../../services/authService';
 
 function LoginForm() {
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   });
+  const [error, setError] = useState('');
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -17,44 +18,43 @@ function LoginForm() {
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const { username, password } = formData;
+    const { email, password } = formData;
+    setError('');
 
-    const user = dataService.findUser(username, password);
+    try {
+      const user = await authService.login(email, password);
 
-    if (user) {
-      if (!user.is_active) {
-        alert('Your account has been deactivated. Please contact the administrator.');
-        return;
+      if (user) {
+        if (user.is_active === false || user.is_active === 0) {
+          alert('Your account has been deactivated. Please contact the administrator.');
+          return;
+        }
+
+        const userType = user.user_type ? user.user_type.toLowerCase().trim() : 'visitor';
+
+        // Store role-specific tokens for compatibility
+        const token = localStorage.getItem('token');
+        if (userType === 'admin') {
+          localStorage.setItem('admin_token', token);
+          navigate('/admin/dashboard');
+        } else if (userType === 'researcher') {
+          localStorage.setItem('researcher_token', token);
+          navigate('/researcher/dashboard');
+        } else if (userType === 'guide') {
+          localStorage.setItem('guide_token', token);
+          navigate('/guide/dashboard');
+        } else {
+          localStorage.setItem('visitor_token', token);
+          navigate('/visitor/dashboard');
+        }
       }
-
-      const userType = user.user_type ? user.user_type.toLowerCase().trim() : 'visitor';
-
-      if (userType === 'admin') {
-        localStorage.setItem('admin_token', 'mock-admin-token');
-        localStorage.setItem('admin_user', JSON.stringify(user));
-        navigate('/admin/dashboard');
-      } else if (userType === 'researcher') {
-        localStorage.setItem('researcher_token', 'mock-researcher-token');
-        localStorage.setItem('researcher_user', JSON.stringify(user));
-        navigate('/researcher/dashboard');
-      } else if (userType === 'guide' || userType === 'site_agent') {
-        localStorage.setItem('guide_token', 'mock-guide-token');
-        localStorage.setItem('guide_user', JSON.stringify(user));
-        navigate('/guide/dashboard');
-      } else {
-        // Visitor
-        localStorage.setItem('visitor_token', 'mock-visitor-token');
-        localStorage.setItem('visitor_user', JSON.stringify(user));
-        navigate('/visitor/dashboard');
-      }
-    } else {
-      alert('Invalid credentials. Please check your username and password.');
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'Invalid credentials. Please check your email and password.');
     }
   };
-
-
 
   return (
     <div className="login-container">
@@ -65,14 +65,15 @@ function LoginForm() {
       
       <div className="login-box">
         <h2>Sign In</h2>
+        {error && <div style={{color: 'red', marginBottom: '10px'}}>{error}</div>}
         
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <input 
-              type="text" 
-              name="username" 
+              type="email" 
+              name="email" 
               placeholder="Enter your email" 
-              value={formData.username}
+              value={formData.email}
               onChange={handleChange}
               required 
             />
@@ -81,7 +82,7 @@ function LoginForm() {
           <div className="form-group">
             <div className="password-wrapper">
               <input 
-                type= "password"
+                type="password"
                 name="password" 
                 placeholder="Password" 
                 value={formData.password}
@@ -89,7 +90,6 @@ function LoginForm() {
                 required 
                 id="password" 
               />
-              
             </div>
           </div>
           

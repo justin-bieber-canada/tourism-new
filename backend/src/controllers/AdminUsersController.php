@@ -20,11 +20,17 @@ class AdminUsersController
 
     public function create(array $input): array
     {
-        $required = ['first_name', 'last_name', 'email', 'user_type', 'password'];
+        // password can be omitted; default to 'password123'
+        $required = ['first_name', 'last_name', 'email', 'user_type'];
         foreach ($required as $field) {
             if (empty($input[$field])) {
                 return ['_status' => 400, 'error' => "$field is required"];
             }
+        }
+
+        $plainPassword = trim((string)($input['password'] ?? ''));
+        if ($plainPassword === '') {
+            $plainPassword = 'password123';
         }
 
         $email = strtolower(trim((string) $input['email']));
@@ -44,7 +50,7 @@ class AdminUsersController
             'last_name' => $input['last_name'],
             'email' => $email,
             'phone_number' => $input['phone_number'] ?? null,
-            'password_hash' => password_hash((string) $input['password'], PASSWORD_BCRYPT),
+            'password_hash' => password_hash($plainPassword, PASSWORD_BCRYPT),
             'profile_picture' => $input['profile_picture'] ?? null,
             'user_type' => $input['user_type'],
             'is_active' => isset($input['is_active']) ? (bool) $input['is_active'] : true,
@@ -53,6 +59,7 @@ class AdminUsersController
         return [
             'message' => 'User created',
             'user_id' => (int) $this->db->lastInsertId(),
+            'temp_password' => $plainPassword,
         ];
     }
 

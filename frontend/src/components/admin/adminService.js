@@ -1,7 +1,8 @@
 import * as mock from './adminService.mock';
 import * as api from './adminApi';
 
-const USE_MOCK = (process.env.REACT_APP_USE_MOCK_ADMIN || 'true') === 'true';
+// Default to live API to ensure DB-backed flows; allow opt-in mock via env
+const USE_MOCK = (process.env.REACT_APP_USE_MOCK_ADMIN || 'false') === 'true';
 
 export const authenticate = (...args) => (USE_MOCK ? mock.authenticate(...args) : api.authenticate(...args));
 export const signout = (...args) => (USE_MOCK ? mock.signout(...args) : api.signout(...args));
