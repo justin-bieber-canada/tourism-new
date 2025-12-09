@@ -1,112 +1,80 @@
 // Normalize API base: if env ends with /api use as-is, else append /api
-const rawBase = (process.env.REACT_APP_API_URL || 'http://localhost:8000/api').replace(/\/$/, '');
+// Default to XAMPP path if not specified, or localhost:8000 if running php -S
+const rawBase = (process.env.REACT_APP_API_URL || 'http://localhost/tourism-new/backend/public').replace(/\/$/, '');
 const API_BASE_URL = rawBase.endsWith('/api') ? rawBase : `${rawBase}/api`;
+
+const parseResponse = async (response) => {
+  const text = await response.text();
+  try {
+    return { data: JSON.parse(text), raw: text };
+  } catch (_) {
+    return { data: null, raw: text };
+  }
+};
+
+const withAuthHeaders = () => {
+  // Prefer explicit tokens if stored under role-specific keys
+  const token =
+    localStorage.getItem('token') ||
+    localStorage.getItem('researcher_token') ||
+    localStorage.getItem('admin_token') ||
+    localStorage.getItem('visitor_token');
+
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return headers;
+};
+
+const handle = async (response) => {
+  const { data, raw } = await parseResponse(response);
+  if (!response.ok) {
+    const message = (data && data.error) ? data.error : (raw || response.statusText);
+    throw new Error(message || 'Request failed');
+  }
+  return data ?? raw;
+};
 
 export const api = {
   get: async (endpoint) => {
-    const token = localStorage.getItem('token');
-    const headers = {
-      'Content-Type': 'application/json',
-    };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'GET',
-      headers,
+      headers: withAuthHeaders(),
     });
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
-    }
-    return response.json();
+    return handle(response);
   },
 
   post: async (endpoint, data) => {
-    const token = localStorage.getItem('token');
-    const headers = {
-      'Content-Type': 'application/json',
-    };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
-      headers,
+      headers: withAuthHeaders(),
       body: JSON.stringify(data),
     });
-
-    const result = await response.json();
-    if (!response.ok) {
-      throw new Error(result.error || `API Error: ${response.statusText}`);
-    }
-    return result;
+    return handle(response);
   },
 
   put: async (endpoint, data) => {
-    const token = localStorage.getItem('token');
-    const headers = {
-      'Content-Type': 'application/json',
-    };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PUT',
-      headers,
+      headers: withAuthHeaders(),
       body: JSON.stringify(data),
     });
-
-    const result = await response.json();
-    if (!response.ok) {
-      throw new Error(result.error || `API Error: ${response.statusText}`);
-    }
-    return result;
+    return handle(response);
   },
 
   patch: async (endpoint, data) => {
-    const token = localStorage.getItem('token');
-    const headers = {
-      'Content-Type': 'application/json',
-    };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PATCH',
-      headers,
+      headers: withAuthHeaders(),
       body: JSON.stringify(data),
     });
-
-    const result = await response.json();
-    if (!response.ok) {
-      throw new Error(result.error || `API Error: ${response.statusText}`);
-    }
-    return result;
+    return handle(response);
   },
   
   delete: async (endpoint) => {
-    const token = localStorage.getItem('token');
-    const headers = {
-      'Content-Type': 'application/json',
-    };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'DELETE',
-      headers,
+      headers: withAuthHeaders(),
     });
-
-    const result = await response.json();
-    if (!response.ok) {
-      throw new Error(result.error || `API Error: ${response.statusText}`);
-    }
-    return result;
+    return handle(response);
   }
 };

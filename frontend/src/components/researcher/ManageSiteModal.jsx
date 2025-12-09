@@ -21,13 +21,13 @@ export default function ManageSiteModal({ site, researcherId, onClose, onSaved }
     if (site) {
       setFormData({
         site_name: site.site_name || '',
-        location: site.location || '',
-        description: site.description || '',
-        price: site.price || '',
-        image: site.image || '',
+        location: site.location || site.location_address || '',
+        description: site.description || site.full_description || site.short_description || '',
+        price: site.price || site.visit_price || '',
+        image: site.image || site.image_url || '',
         category: site.category || 'Historical Site',
         region: site.region || '',
-        visit_duration: site.visit_duration || '',
+        visit_duration: site.visit_duration || site.estimated_duration || '',
         nearby_attractions: site.nearby_attractions || '',
         map_url: site.map_url || ''
       });

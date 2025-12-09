@@ -21,9 +21,20 @@ export default function ResearcherSites() {
     }
   }, [user.user_id, location.search]);
 
-  const loadSites = () => {
+  const loadSites = async () => {
     if (user.user_id) {
-      setSites(getResearcherSites(user.user_id));
+      try {
+        const data = await getResearcherSites(user.user_id);
+        if (Array.isArray(data)) {
+            setSites(data);
+        } else {
+            console.error("ResearcherSites: Expected array, got", data);
+            setSites([]);
+        }
+      } catch (err) {
+        console.error(err);
+        setSites([]);
+      }
     }
   };
 
@@ -81,7 +92,7 @@ export default function ResearcherSites() {
                 {sites.map(s => (
                   <tr key={s.site_id}>
                     <td>{s.site_name}</td>
-                    <td>{s.location}</td>
+                    <td>{s.location || s.location_address}</td>
                     <td>
                       <span style={{
                         padding: '4px 8px', 

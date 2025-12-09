@@ -39,5 +39,13 @@ export const guideService = {
         status = 'approved'; 
     }
     return await api.patch(`/requests/${requestId}/status`, { status, notes });
+  },
+
+  updateProfile: async (data) => {
+    return await api.patch('/users/me', data);
+  },
+
+  changePassword: async (newPassword) => {
+    return await api.patch('/users/me', { password: newPassword });
   }
 };

@@ -7,6 +7,7 @@ export default function AddUserModal({ onClose, onCreated, defaultType = 'site_a
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [userType, setUserType] = useState(defaultType);
   const [submitting, setSubmitting] = useState(false);
 
@@ -14,7 +15,13 @@ export default function AddUserModal({ onClose, onCreated, defaultType = 'site_a
     e.preventDefault();
     setSubmitting(true);
     try {
-      const newUser = await createUser({ first_name: firstName, last_name: lastName, email, user_type: userType });
+      const newUser = await createUser({ 
+        first_name: firstName, 
+        last_name: lastName, 
+        email, 
+        phone_number: phoneNumber,
+        user_type: userType 
+      });
       onCreated && onCreated(newUser);
       onClose();
     } catch (err) {
@@ -33,6 +40,8 @@ export default function AddUserModal({ onClose, onCreated, defaultType = 'site_a
         <input value={lastName} onChange={e => setLastName(e.target.value)} required />
         <label>Email</label>
         <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+        <label>Phone Number</label>
+        <input type="tel" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} />
         <label>Type</label>
         <select value={userType} onChange={e => setUserType(e.target.value)}>
           <option value="site_agent">Site Agent</option>

@@ -45,6 +45,16 @@ export default function AdminUsers() {
     }
   };
 
+  const formatType = (type, role, fallbackType, label) => {
+    const raw = (label || type || role || fallbackType || '').toLowerCase();
+    if (raw === 'site_agent' || raw === 'site agent' || raw === 'guide') return 'Site Agent';
+    if (raw === 'researcher') return 'Researcher';
+    if (raw === 'visitor') return 'Visitor';
+    if (raw === 'admin') return 'Admin';
+    if (!raw) return 'Site Agent'; // default for legacy/blank values where site agents were stored without type
+    return label || type || role || fallbackType || '—';
+  };
+
   return (
     <div className="admin-layout">
       <AdminSidebar />
@@ -71,7 +81,7 @@ export default function AdminUsers() {
                     <td>{u.user_id}</td>
                     <td>{u.first_name} {u.last_name}</td>
                     <td>{u.email}</td>
-                    <td>{(u.user_type === 'guide' || u.user_type === 'site_agent') ? 'Site Agent' : u.user_type}</td>
+                    <td>{formatType(u.user_type, u.role, u.type, u.user_type_label)}</td>
                     <td>{u.is_active ? 'Yes' : 'No'}</td>
                     <td>
                       <div style={{display: 'flex', gap: '5px', alignItems: 'center'}}>

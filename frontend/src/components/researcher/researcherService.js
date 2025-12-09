@@ -13,7 +13,10 @@ export const getResearcherSummary = async () => {
 
 export const getResearcherSites = async () => {
   const res = await api.get('/sites');
-  return res.data || res;
+  const payload = res?.data ?? res;
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.items)) return payload.items;
+  return [];
 };
 
 export const addSite = async (site) => {

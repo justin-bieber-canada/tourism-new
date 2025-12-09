@@ -31,24 +31,42 @@ export const getSummary = async () => {
 
 export const getUsers = async () => {
   const res = await api.get('/admin/users');
-  return res.data || res;
+  const payload = res?.data ?? res;
+
+  // backend responds with { users: [...] }; normalize to plain array for callers
+  let users = [];
+  if (Array.isArray(payload)) users = payload;
+  else if (Array.isArray(payload?.users)) users = payload.users;
+
+  // Add display label so guides render as Site Agent in UI
+  return users.map(u => ({
+    ...u,
+    user_type_label: (u?.user_type === 'guide') ? 'Site Agent' : u?.user_type,
+  }));
 };
 
 export const getSites = async () => {
   const res = await api.get('/sites');
-  return res.data || res;
+  const payload = res?.data ?? res;
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.items)) return payload.items;
+  return [];
 };
 
 export const getRequests = async () => {
   const res = await api.get('/requests');
-  // backend returns {requests: [...]}
-  if (Array.isArray(res)) return res;
-  return res.requests || res.data || [];
+  const payload = res?.data ?? res;
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.requests)) return payload.requests;
+  return [];
 };
 
 export const getPayments = async () => {
   const res = await api.get('/payments');
-  return res.data || res;
+  const payload = res?.data ?? res;
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.payments)) return payload.payments;
+  return [];
 };
 
 export const createSite = async (site) => {

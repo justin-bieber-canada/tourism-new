@@ -18,12 +18,16 @@ export default function VisitorDashboard() {
     if (userData) {
         setUser(userData);
         visitorService.getHistory(userData.user_id).then(requests => {
+            if (!Array.isArray(requests)) {
+                console.error("VisitorDashboard: Expected array, got", requests);
+                return;
+            }
             setSummary({
                 upcomingVisits: requests.filter(r => r.request_status === 'approved').length,
                 pendingRequests: requests.filter(r => r.request_status === 'pending').length,
                 completedVisits: requests.filter(r => r.request_status === 'completed').length
             });
-        });
+        }).catch(console.error);
     }
   }, []);
 

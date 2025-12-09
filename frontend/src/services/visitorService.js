@@ -29,7 +29,11 @@ export const visitorService = {
   getSites: async () => {
     try {
       const response = await api.get('/sites');
-      return response.data || response;
+      // Handle { items: [...] } structure from backend
+      const payload = response.data || response;
+      if (Array.isArray(payload)) return payload;
+      if (Array.isArray(payload?.items)) return payload.items;
+      return [];
     } catch (error) {
       console.error("Failed to fetch sites", error);
       return [];
@@ -54,7 +58,9 @@ export const visitorService = {
     try {
       const response = await api.get(`/requests?visitor_id=${userId}`);
       if (Array.isArray(response)) return response;
-      return response.requests || response.data || [];
+      if (response && Array.isArray(response.requests)) return response.requests;
+      if (response && Array.isArray(response.data)) return response.data;
+      return [];
     } catch (error) {
       console.error("Failed to fetch requests", error);
       return [];

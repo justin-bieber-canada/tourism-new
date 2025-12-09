@@ -16,6 +16,7 @@ export default function GuideProfile() {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState('');
+  const [passData, setPassData] = useState({ current: '', new: '', confirm: '' });
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('guide_user'));
@@ -54,6 +55,21 @@ export default function GuideProfile() {
       localStorage.setItem('guide_user', JSON.stringify(profile));
     } else {
       setMessage('Failed to update profile.');
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (passData.new !== passData.confirm) {
+      alert('New passwords do not match');
+      return;
+    }
+    try {
+      await guideService.changePassword(passData.new);
+      setMessage('Password changed successfully.');
+      setPassData({ current: '', new: '', confirm: '' });
+    } catch (err) {
+      alert('Password change failed: ' + err.message);
     }
   };
 
@@ -188,6 +204,33 @@ export default function GuideProfile() {
                 <button type="button" className="guide-btn btn-danger" onClick={() => setIsEditing(false)}>Cancel</button>
               </div>
             )}
+          </form>
+        </div>
+
+        <div className="guide-card" style={{maxWidth: '600px', marginTop: '30px'}}>
+          <h3>Change Password</h3>
+          <form onSubmit={handleChangePassword}>
+            <div className="form-group">
+              <label style={{display: 'block', marginBottom: '5px', fontWeight: 'bold'}}>New Password</label>
+              <input 
+                type="password" 
+                value={passData.new}
+                onChange={e => setPassData({...passData, new: e.target.value})}
+                style={{width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px'}}
+                required
+              />
+            </div>
+            <div className="form-group" style={{marginTop: '15px'}}>
+              <label style={{display: 'block', marginBottom: '5px', fontWeight: 'bold'}}>Confirm New Password</label>
+              <input 
+                type="password" 
+                value={passData.confirm}
+                onChange={e => setPassData({...passData, confirm: e.target.value})}
+                style={{width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px'}}
+                required
+              />
+            </div>
+            <button type="submit" className="guide-btn btn-primary" style={{marginTop: '20px'}}>Update Password</button>
           </form>
         </div>
       </main>

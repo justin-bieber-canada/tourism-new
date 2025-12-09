@@ -40,6 +40,12 @@ class AdminUsersController
             return ['_status' => 409, 'error' => 'Email already exists'];
         }
 
+        $userType = $input['user_type'];
+        // Normalize: store site agents explicitly as site_agent; map any legacy "guide" to site_agent
+        if ($userType === 'guide') {
+            $userType = 'site_agent';
+        }
+
         $stmt = $this->db->prepare(
             'INSERT INTO Users (first_name, last_name, email, phone_number, password_hash, profile_picture, user_type, is_active)
              VALUES (:first_name, :last_name, :email, :phone_number, :password_hash, :profile_picture, :user_type, :is_active)'
@@ -52,7 +58,7 @@ class AdminUsersController
             'phone_number' => $input['phone_number'] ?? null,
             'password_hash' => password_hash($plainPassword, PASSWORD_BCRYPT),
             'profile_picture' => $input['profile_picture'] ?? null,
-            'user_type' => $input['user_type'],
+            'user_type' => $userType,
             'is_active' => isset($input['is_active']) ? (bool) $input['is_active'] : true,
         ]);
 

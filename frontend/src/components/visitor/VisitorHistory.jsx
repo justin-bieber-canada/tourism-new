@@ -15,6 +15,11 @@ export default function VisitorHistory() {
     const user = JSON.parse(localStorage.getItem('visitor_user'));
     if (user) {
         visitorService.getHistory(user.user_id).then(data => {
+            if (!Array.isArray(data)) {
+                console.error("VisitorHistory: Expected array, got", data);
+                setVisits([]);
+                return;
+            }
             const mappedVisits = data.map(r => ({
                 id: r.request_id,
                 site: r.site_name,
@@ -25,6 +30,9 @@ export default function VisitorHistory() {
                 feedback: r.feedback
             }));
             setVisits(mappedVisits);
+        }).catch(err => {
+            console.error("VisitorHistory error:", err);
+            setVisits([]);
         });
     }
   };

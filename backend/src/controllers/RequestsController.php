@@ -61,9 +61,23 @@ class RequestsController
         ];
     }
 
-    public function listAll(): array
+    public function listAll(array $context = []): array
     {
-        $stmt = $this->db->query('SELECT * FROM GuideRequests ORDER BY created_at DESC');
+        $sql = 'SELECT * FROM GuideRequests ORDER BY created_at DESC';
+        $params = [];
+
+        // If guide, filter by assigned requests OR approved requests needing a guide
+        if (isset($context['role']) && ($context['role'] === 'guide' || $context['role'] === 'site_agent')) {
+            $guideId = (int)($context['sub'] ?? 0);
+            $sql = 'SELECT * FROM GuideRequests 
+                    WHERE assigned_guide_id = :guide_id 
+                       OR (request_status = "approved" AND assigned_guide_id IS NULL)
+                    ORDER BY created_at DESC';
+            $params['guide_id'] = $guideId;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return [
             'requests' => $stmt->fetchAll(),
         ];
@@ -80,6 +94,28 @@ class RequestsController
 
         $stmt = $this->db->prepare('UPDATE GuideRequests SET request_status = "approved" WHERE request_id = :id');
         $stmt->execute(['id' => $requestId]);
+
+        // --- Create Visit Record ---
+        try {
+            $req = $this->db->prepare("SELECT * FROM GuideRequests WHERE request_id = :id");
+            $req->execute(['id' => $requestId]);
+            $request = $req->fetch();
+
+            if ($request) {
+                $stmt = $this->db->prepare(
+                    "INSERT INTO Visits (request_id, actual_visit_date, actual_visit_time, status)
+                     VALUES (:rid, :date, :time, 'upcoming')"
+                );
+                $stmt->execute([
+                    'rid' => $requestId,
+                    'date' => $request['preferred_date'],
+                    'time' => $request['preferred_time']
+                ]);
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+        // ---------------------------
 
         return [
             'message' => 'Request approved',

@@ -33,10 +33,20 @@ $sitesController = new SitesController($pdo);
 $requestsController = new RequestsController($pdo, $paymentService);
 $paymentsController = new PaymentsController($paymentService, $fileService);
 $notificationsController = new NotificationsController($pdo);
-$reviewsController = new ReviewsController();
+$reviewsController = new ReviewsController($pdo);
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+
+// Normalize path for subfolder deployment (e.g. /tourism-new/backend/public/api/sites -> /api/sites)
+$apiPos = strpos($path, '/api/');
+if ($apiPos !== false) {
+    $path = substr($path, $apiPos);
+}
+
+// Debug all requests
+file_put_contents(__DIR__ . '/request_debug.log', date('[Y-m-d H:i:s] ') . "$method $path\n", FILE_APPEND);
+
 $body = json_decode(file_get_contents('php://input'), true) ?? [];
 
 $respond = static function (array $result): void {
@@ -76,8 +86,22 @@ switch (true) {
         break;
 
     case $method === 'POST' && $path === '/api/sites':
+        // Log incoming payload and auth header for diagnostics
+        $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '(none)';
+        file_put_contents(__DIR__ . '/debug_sites_store.log', date('[Y-m-d H:i:s] ') . "Auth: $authHeader\nBody: " . print_r($body, true) . "\n", FILE_APPEND);
+
         $context = AuthMiddleware::requireToken();
         $respond($sitesController->store($context, $body));
+        break;
+
+    case $method === 'PATCH' && preg_match('#^/api/sites/(\d+)$#', $path, $matches):
+        $context = AuthMiddleware::requireToken();
+        $respond($sitesController->update($context, (int)$matches[1], $body));
+        break;
+
+    case $method === 'DELETE' && preg_match('#^/api/sites/(\d+)$#', $path, $matches):
+        $context = AuthMiddleware::requireToken();
+        $respond($sitesController->delete((int) $matches[1]));
         break;
 
     case $method === 'PATCH' && preg_match('#^/api/sites/(\d+)/approve$#', $path, $matches):
@@ -91,10 +115,13 @@ switch (true) {
         break;
 
     case $method === 'GET' && $path === '/api/requests':
-        if (isset($_GET['visitor_id'])) {
-            $respond($requestsController->listForVisitor((int) $_GET['visitor_id']));
+        $context = AuthMiddleware::requireToken();
+        // If visitor, use listForVisitor
+        if (($context['role'] ?? '') === 'visitor') {
+            $respond($requestsController->listForVisitor((int)$context['sub']));
         } else {
-            $respond($requestsController->listAll());
+            // Admin or Guide
+            $respond($requestsController->listAll($context));
         }
         break;
 

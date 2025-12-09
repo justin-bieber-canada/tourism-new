@@ -54,7 +54,9 @@ export default function RequestGuide() {
         preferred_time: formData.time,
         number_of_visitors: formData.visitors,
         special_requirements: formData.specialReq,
-        amount: site ? (site.price + (site.guide_fee || 0)) * formData.visitors : 0
+        amount: site ? (site.price + (site.guide_fee || 0)) * formData.visitors : 0,
+        // Default guide type for now, or add a selector if needed
+        guide_type_id: 1 
     };
 
     visitorService.createRequest(requestData).then(() => {

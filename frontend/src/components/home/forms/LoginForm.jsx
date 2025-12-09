@@ -38,15 +38,19 @@ function LoginForm() {
         const token = localStorage.getItem('token');
         if (userType === 'admin') {
           localStorage.setItem('admin_token', token);
+          localStorage.setItem('admin_user', JSON.stringify(user));
           navigate('/admin/dashboard');
         } else if (userType === 'researcher') {
           localStorage.setItem('researcher_token', token);
+          localStorage.setItem('researcher_user', JSON.stringify(user));
           navigate('/researcher/dashboard');
-        } else if (userType === 'guide') {
+        } else if (userType === 'guide' || userType === 'site_agent') {
           localStorage.setItem('guide_token', token);
+          localStorage.setItem('guide_user', JSON.stringify(user));
           navigate('/guide/dashboard');
         } else {
           localStorage.setItem('visitor_token', token);
+          localStorage.setItem('visitor_user', JSON.stringify(user));
           navigate('/visitor/dashboard');
         }
       }

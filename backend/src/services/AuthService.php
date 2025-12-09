@@ -40,6 +40,11 @@ class AuthService
 
         $passwordHash = password_hash((string) $input['password'], PASSWORD_BCRYPT);
 
+        $userType = $input['user_type'];
+        if ($userType === 'guide') {
+            $userType = 'site_agent';
+        }
+
         $stmt = $this->db->prepare(
             'INSERT INTO Users (first_name, last_name, email, phone_number, password_hash, profile_picture, user_type)
              VALUES (:first_name, :last_name, :email, :phone_number, :password_hash, :profile_picture, :user_type)'
@@ -52,7 +57,7 @@ class AuthService
             'phone_number' => $input['phone_number'] ?? null,
             'password_hash' => $passwordHash,
             'profile_picture' => $input['profile_picture'] ?? null,
-            'user_type' => $input['user_type'],
+            'user_type' => $userType,
         ]);
 
         $userId = (int) $this->db->lastInsertId();
@@ -109,9 +114,16 @@ class AuthService
 
     public function currentUser(array $context): array
     {
-        return [
-            'user' => $context,
-        ];
+        $userId = (int) ($context['sub'] ?? 0);
+        $stmt = $this->db->prepare('SELECT user_id, first_name, last_name, email, phone_number, profile_picture, user_type, is_active, created_at FROM Users WHERE user_id = :id');
+        $stmt->execute(['id' => $userId]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$user) {
+            return ['_status' => 404, 'error' => 'User not found'];
+        }
+
+        return ['user' => $user];
     }
 
     public function updateProfile(array $context, array $input): array

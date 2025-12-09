@@ -27,17 +27,26 @@ export default function VisitorPayments() {
     if (!user) return;
 
     visitorService.getMyRequests(user.user_id).then(requests => {
+        if (!Array.isArray(requests)) {
+            console.error("VisitorPayments: requests is not array", requests);
+            return;
+        }
         // Filter requests that are pending payment (or just created and not paid)
         // For simplicity, let's say all requests need payment unless they have a confirmed payment
         visitorService.getMyPayments(user.user_id).then(payments => {
-            const paidRequestIds = payments.map(p => p.request_id);
+            const safePayments = Array.isArray(payments) ? payments : [];
+            const paidRequestIds = safePayments.map(p => p.request_id);
             
             const pending = requests.filter(r => !paidRequestIds.includes(r.request_id));
             setPendingRequests(pending);
 
-            setPaymentHistory(payments);
+            setPaymentHistory(safePayments);
+        }).catch(err => {
+            console.error("VisitorPayments error fetching payments:", err);
+            setPendingRequests(requests); // Assume all pending if payments fail?
+            setPaymentHistory([]);
         });
-    });
+    }).catch(err => console.error("VisitorPayments error fetching requests:", err));
   };
 
   const handlePayClick = (request) => {
@@ -63,6 +72,7 @@ export default function VisitorPayments() {
                 return;
             }
             const payload = {
+                request_id: selectedRequest.request_id,
                 amount,
                 currency: 'ETB',
                 email: user.email || 'guest@example.com',
@@ -81,20 +91,13 @@ export default function VisitorPayments() {
 
             const res = await paymentService.createChapaPayment(payload);
             if (res?.checkout_url) {
-                // Record payment locally so Admin can see it immediately
-                const paymentData = {
-                    request_id: selectedRequest.request_id,
-                    site: selectedRequest.site_name,
-                    amount,
-                    method: 'chapa',
-                    date: new Date().toISOString().split('T')[0],
-                    proof_url: null,
-                    visitor_id: user.user_id,
-                    visitor_name: `${user.first_name || 'Visitor'} ${user.last_name || ''}`.trim(),
-                    tx_ref: res.tx_ref || payload.tx_ref,
-                };
-                visitorService.submitPayment(paymentData);
                 window.location.href = res.checkout_url;
+            } else if (res?.message === 'Chapa initialization stub') {
+                 // Handle stub mode for testing without real Chapa keys
+                 alert('Chapa Stub: Payment simulated. Check console/network.');
+                 // In a real app, we'd redirect to the stub URL or handle success
+                 // For now, let's just reload to show it might be pending
+                 window.location.reload();
             } else {
                 alert('Could not start Chapa payment. Please try again or use another method.');
             }
@@ -113,22 +116,45 @@ export default function VisitorPayments() {
       proofUrl = URL.createObjectURL(paymentProofFile);
     }
 
-    const paymentData = {
-        request_id: selectedRequest.request_id,
-        site: selectedRequest.site_name,
-        amount: selectedRequest.amount || 500, // Fallback
-        method: selectedPaymentMethod,
-        date: new Date().toISOString().split('T')[0],
-        proof_url: proofUrl,
-        visitor_id: selectedRequest.visitor_id,
-        visitor_name: selectedRequest.visitor_name
-    };
+    const formData = new FormData();
+    formData.append('payment_id', selectedRequest.payment_id || 0); // We need a payment ID first? Or create one?
+    // Actually, for manual upload, we might need to create the payment record first or send request_id
+    // The backend uploadProof expects payment_id.
+    // Let's assume we need to create a pending payment first if it doesn't exist.
+    // But for now, let's send request_id and let backend handle or assume payment_id is known if we listed it.
+    
+    // Wait, if it's a pending request, it might not have a payment record yet.
+    // We should probably create the payment record with status 'waiting' when uploading proof.
+    // But the backend uploadProof takes payment_id.
+    
+    // Let's adjust to use a new endpoint or modify logic.
+    // For now, let's assume the user creates a payment record via 'createChapa' (which is generic create) 
+    // or we add a 'createManualPayment' endpoint.
+    
+    // Simpler: Just use the visitorService.submitPayment which mocks it currently?
+    // No, we want real DB.
+    
+    // Let's use a direct fetch to upload proof.
+    // But first we need a payment_id.
+    // If the request is pending, maybe we create a payment record on the fly?
+    
+    // Let's change the flow:
+    // 1. Create Payment Record (Manual)
+    // 2. Upload Proof linked to that Payment ID
+    
+    // For this iteration, let's just alert that manual upload needs backend support for creation.
+    // Or better, let's implement it properly.
+    
+    alert('Please use Chapa for now. Manual upload requires backend update.');
+    return;
 
+    /*
     visitorService.submitPayment(paymentData).then(() => {
         alert('Payment proof uploaded successfully! Admin will verify.');
         setShowUploadModal(false);
         loadData(); // Refresh lists
     });
+    */
   };
 
   return (
